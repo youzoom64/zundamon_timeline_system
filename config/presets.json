@@ -1,0 +1,80 @@
+{
+  "expressions": {
+    "normal": {
+      "name": "通常",
+      "eyeWhite": "normal_white_eye",
+      "eyeBlack": "normal_eye",
+      "eyebrow": "normal_eyebrow",
+      "mouth": "muhu"
+    },
+    "happy": {
+      "name": "喜び",
+      "eyeWhite": "normal_white_eye",
+      "eyeBlack": "smile_eye",
+      "eyebrow": "normal_eyebrow",
+      "mouth": "hoa"
+    },
+    "angry": {
+      "name": "怒り",
+      "eyeWhite": "sharp_white_eye",
+      "eyeBlack": "sharp_eye",
+      "eyebrow": "angry_eyebrow",
+      "mouth": "triangle"
+    },
+    "sad": {
+      "name": "悲しみ",
+      "eyeWhite": "normal_white_eye",
+      "eyeBlack": "normal_eye",
+      "eyebrow": "troubled_eyebrow1",
+      "mouth": "nn"
+    },
+    "tired": {
+      "name": "疲れ",
+      "eyeWhite": null,
+      "eyeBlack": "sleepy_eye",
+      "eyebrow": "troubled_eyebrow2",
+      "mouth": "nnaa"
+    }
+  },
+  "poses": {
+    "basic": {
+      "name": "基本",
+      "rightArm": "basic",
+      "leftArm": "basic"
+    },
+    "point": {
+      "name": "指差し",
+      "rightArm": "point",
+      "leftArm": "waist"
+    },
+    "raise_hand": {
+      "name": "手上げ",
+      "rightArm": "raise_hand",
+      "leftArm": "basic"
+    },
+    "think": {
+      "name": "考える",
+      "rightArm": "basic",
+      "leftArm": "think"
+    },
+    "mic": {
+      "name": "マイク",
+      "rightArm": "mic",
+      "leftArm": "basic"
+    }
+  },
+  "outfits": {
+    "usual": {
+      "name": "いつもの服",
+      "clothes": "usual_clothes"
+    },
+    "uniform": {
+      "name": "制服",
+      "clothes": "uniform"
+    },
+    "casual": {
+      "name": "水着",
+      "clothes": null
+    }
+  }
+}

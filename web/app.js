@@ -73,6 +73,7 @@ function handleServerMessage(data) {
     case "speech_start":
       console.log("🎤 音声開始:", data.text);
       updateDebugStatus("speech-status", "発話中", true);
+      startSpeechAnimation(data.text);
       break;
       
     case "volume_level":
@@ -80,12 +81,12 @@ function handleServerMessage(data) {
       break;
       
     case "speech_end":
-      console.log("🎤 音声終了");
-      updateDebugStatus("speech-status", "待機中", false);
-      if (sprites.mouth && mouthTextures.closed) {
+    console.log("🎤 音声終了");
+    updateDebugStatus("speech-status", "待機中", false);
+    if (sprites.mouth && mouthTextures.closed) {
         sprites.mouth.texture = mouthTextures.closed;
-      }
-      break;
+    }
+    break;
       
     case "speech_error":
       console.error("🎤 音声エラー:", data.error);
@@ -348,4 +349,102 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
   init();
+}
+
+// サーバーメッセージ処理
+function handleServerMessage(data) {
+  console.log("[WebSocket受信]", data);
+  
+  switch(data.action) {
+    case "blink":
+      if (currentState.blink) {
+        startBlinkAnimation();
+      }
+      break;
+      
+    case "speech_start":
+      console.log("音声開始:", data.text);
+      updateDebugStatus("speech-status", "発話中", true);
+      // 音声開始時に口パクアニメーション開始
+      startSpeechAnimation(data.text);
+      break;
+      
+    case "volume_level":
+      updateMouthByVolume(data.level);
+      break;
+      
+    case "speech_end":
+      console.log("音声終了");
+      updateDebugStatus("speech-status", "待機中", false);
+      // 口を閉じる
+      resetMouth();
+      break;
+      
+    case "speech_error":
+      console.error("音声エラー:", data.error);
+      updateDebugStatus("speech-status", "エラー", false);
+      resetMouth();
+      break;
+      
+    case "update_character":
+    case "change_expression":
+    case "change_pose":
+    case "change_outfit":
+      updateCharacter(data);
+      break;
+      
+    default:
+      console.log("未知のメッセージ:", data);
+  }
+}
+
+
+let speechAnimationInterval = null;
+
+// 音声アニメーション開始
+function startSpeechAnimation(text) {
+  console.log("口パクアニメーション開始:", text);
+  
+  if (speechAnimationInterval) {
+    clearInterval(speechAnimationInterval);
+  }
+  
+  if (!sprites.mouth) {
+    console.warn("sprites.mouth が見つかりません");
+    return;
+  }
+  
+  const estimatedDuration = text.length * 150;
+  let elapsed = 0;
+  
+  speechAnimationInterval = setInterval(() => {
+    if (elapsed >= estimatedDuration) {
+      resetMouth();
+      clearInterval(speechAnimationInterval);
+      speechAnimationInterval = null;
+      console.log("口パクアニメーション終了");
+      return;
+    }
+    
+    // ランダムに口の形を変える
+    const shouldOpen = Math.random() > 0.5;
+    if (shouldOpen && mouthTextures.open1) {
+      sprites.mouth.texture = mouthTextures.open1;
+    } else if (mouthTextures.closed) {
+      sprites.mouth.texture = mouthTextures.closed;
+    }
+    
+    elapsed += 200;
+  }, 200);
+}
+
+// 口をリセット
+function resetMouth() {
+  if (speechAnimationInterval) {
+    clearInterval(speechAnimationInterval);
+    speechAnimationInterval = null;
+  }
+  if (sprites.mouth && mouthTextures.closed) {
+    sprites.mouth.texture = mouthTextures.closed;
+  }
 }

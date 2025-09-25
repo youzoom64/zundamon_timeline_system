@@ -159,4 +159,4 @@ class AudioAnalyzer:
     
     def create_player(self):
         """音声プレイヤー作成"""
-        return AudioPlayer(callback=self.volume_callback_sync)
+        return AudioPlayer(self.volume_callback_sync)

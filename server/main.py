@@ -27,9 +27,9 @@ obs_controller = None
 plugin_manager = None
 volume_queue = queue.Queue()
 
-async def browser_handler(websocket, path):
+async def browser_handler(websocket):
     """ブラウザ用WebSocketハンドラー"""
-    global browser_clients  # ✅ global宣言追加
+    global browser_clients
     browser_clients.add(websocket)
     logging.info(f"[WebSocket] ブラウザ接続: {len(browser_clients)}台")
     
@@ -58,9 +58,9 @@ async def browser_handler(websocket, path):
     finally:
         browser_clients.discard(websocket)
 
-async def control_handler(websocket, path):
+async def control_handler(websocket):
     """外部制御用WebSocketハンドラー"""
-    global control_clients  # ✅ global宣言追加
+    global control_clients
     control_clients.add(websocket)
     logging.info(f"[WebSocket] 制御クライアント接続: {len(control_clients)}台")
     
@@ -324,14 +324,29 @@ def setup_logging(config):
     if log_file:
         Path(log_file).parent.mkdir(parents=True, exist_ok=True)
     
+    # ハンドラー設定でエンコーディングを指定
+    handlers = [
+        logging.StreamHandler(sys.stdout)  # コンソール出力も明示的に指定
+    ]
+    
+    if log_file:
+        # ファイル出力でUTF-8エンコーディングを指定
+        handlers.append(logging.FileHandler(log_file, encoding='utf-8'))
+    
     logging.basicConfig(
         level=getattr(logging, log_level),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_file) if log_file else logging.NullHandler()
-        ]
+        handlers=handlers,
+        force=True  # 既存設定を強制リセット
     )
+    
+    # コンソール出力のエンコーディング確認
+    if hasattr(sys.stdout, 'reconfigure'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        except:
+            pass  # 古いPythonバージョンでは無視
 
 if __name__ == "__main__":
     config_manager = ConfigManager()

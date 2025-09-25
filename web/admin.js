@@ -94,6 +94,7 @@ function useDefaultPresets() {
     }
   };
   setupUI();
+  createSimplePreview();
 }
 
 // UI設定
@@ -253,34 +254,172 @@ function updateActiveButtons() {
   }
 }
 
-// プレビューキャラクター（簡易実装）
+// プレビューキャラクター（複雑版）
 function loadAssets() {
-  // 簡易版のアセット読み込み
-  console.log("📦 プレビュー用アセット読み込み");
+  console.log("📦 アセット読み込み開始");
   
-  // TODO: 実際のプレビューキャラクター実装
-  createSimplePreview();
+  app.loader
+    .add("body", "/assets/zundamon_en/outfit2/body.png")
+    .add("swimsuit", "/assets/zundamon_en/outfit2/swimsuit.png")
+    .add("usual_clothes", "/assets/zundamon_en/outfit1/usual_clothes.png")
+    .add("uniform", "/assets/zundamon_en/outfit1/uniform.png")
+    .add("basic_right", "/assets/zundamon_en/outfit1/right_arm/basic.png")
+    .add("basic_left", "/assets/zundamon_en/outfit1/left_arm/basic.png")
+    .add("point_right", "/assets/zundamon_en/outfit1/right_arm/point.png")
+    .add("waist_left", "/assets/zundamon_en/outfit1/left_arm/waist.png")
+    .add("raise_hand_right", "/assets/zundamon_en/outfit1/right_arm/raise_hand.png")
+    .add("think_left", "/assets/zundamon_en/outfit1/left_arm/think.png")
+    .add("mic_right", "/assets/zundamon_en/outfit1/right_arm/mic.png")
+    .add("edamame", "/assets/zundamon_en/edamame/edamame_normal.png")
+    .add("normal_white_eye", "/assets/zundamon_en/eye/eye_set/normal_white_eye.png")
+    .add("sharp_white_eye", "/assets/zundamon_en/eye/eye_set/sharp_white_eye.png")
+    .add("normal_eye", "/assets/zundamon_en/eye/eye_set/pupil/normal_eye.png")
+    .add("smile_eye", "/assets/zundamon_en/eye/smile_eye.png")
+    .add("sharp_eye", "/assets/zundamon_en/eye/sharp_eye.png")
+    .add("sleepy_eye", "/assets/zundamon_en/eye/sleepy_eye.png")
+    .add("normal_eyebrow", "/assets/zundamon_en/eyebrow/normal_eyebrow.png")
+    .add("angry_eyebrow", "/assets/zundamon_en/eyebrow/angry_eyebrow.png")
+    .add("troubled_eyebrow1", "/assets/zundamon_en/eyebrow/troubled_eyebrow1.png")
+    .add("troubled_eyebrow2", "/assets/zundamon_en/eyebrow/troubled_eyebrow2.png")
+    .add("muhu", "/assets/zundamon_en/mouth/muhu.png")
+    .add("hoa", "/assets/zundamon_en/mouth/hoa.png")
+    .add("triangle", "/assets/zundamon_en/mouth/triangle.png")
+    .add("nn", "/assets/zundamon_en/mouth/nn.png")
+    .add("nnaa", "/assets/zundamon_en/mouth/nnaa.png")
+    .load((loader, resources) => {
+      console.log("✅ アセット読み込み完了");
+      createCharacter();
+    });
 }
 
-function createSimplePreview() {
-  // 簡易プレビュー表示
-  const text = new PIXI.Text('ずんだもん\nプレビュー', {
-    fontFamily: 'Arial',
-    fontSize: 24,
-    fill: 0xFFFFFF,
-    align: 'center'
-  });
+function createCharacter() {
+  console.log("👤 キャラクター作成開始");
   
-  text.x = app.view.width / 2;
-  text.y = app.view.height / 2;
-  text.anchor.set(0.5);
+  // ステージを完全にクリア
+  app.stage.removeChildren();
   
-  app.stage.addChild(text);
+  // 新しいコンテナを作成
+  zundamonContainer = new PIXI.Container();
+  
+  // スプライト作成
+  sprites = {};
+  addSprite("body", "body");
+  addSprite("swimsuit", "swimsuit");
+  addSprite("clothes", getCurrentClothes());
+  addSprite("eyeWhite", getCurrentEyeWhite());
+  addSprite("eyeBlack", getCurrentEyeBlack());
+  addSprite("eyebrow", getCurrentEyebrow());
+  addSprite("mouth", getCurrentMouth());
+  addSprite("rightArm", getCurrentRightArm());
+  addSprite("leftArm", getCurrentLeftArm());
+  addSprite("edamame", "edamame");
+  
+  // コンテナをステージに追加
+  app.stage.addChild(zundamonContainer);
+  
+  // コンテナのサイズと位置を調整
+  zundamonContainer.scale.set(0.5);
+  zundamonContainer.x = 70;
+  zundamonContainer.y = -20;
+  
+  console.log("✅ キャラクター作成完了");
+  updateCharacterStatus("キャラクター表示完了", true);
+}
+
+function addSprite(name, textureKey) {
+  if (textureKey && app.loader.resources[textureKey]) {
+    sprites[name] = new PIXI.Sprite(app.loader.resources[textureKey].texture);
+    sprites[name].x = 0;
+    sprites[name].y = 0;
+    sprites[name].visible = true;
+    zundamonContainer.addChild(sprites[name]);
+    console.log(`${name} スプライト追加: ${textureKey}`);
+  } else if (textureKey === null) {
+    sprites[name] = new PIXI.Sprite();
+    sprites[name].visible = false;
+    zundamonContainer.addChild(sprites[name]);
+    console.log(`${name} スプライト非表示`);
+  } else {
+    console.warn(`テクスチャが見つかりません: ${textureKey}`);
+  }
+}
+
+function getCurrentEyeWhite() {
+  return presets.expressions[currentState.expression]?.eyeWhite || "normal_white_eye";
+}
+
+function getCurrentEyeBlack() {
+  return presets.expressions[currentState.expression]?.eyeBlack || "normal_eye";
+}
+
+function getCurrentEyebrow() {
+  return presets.expressions[currentState.expression]?.eyebrow || "normal_eyebrow";
+}
+
+function getCurrentMouth() {
+  return presets.expressions[currentState.expression]?.mouth || "muhu";
+}
+
+function getCurrentRightArm() {
+  return presets.poses[currentState.pose]?.rightArm + "_right" || "basic_right";
+}
+
+function getCurrentLeftArm() {
+  return presets.poses[currentState.pose]?.leftArm + "_left" || "basic_left";
+}
+
+function getCurrentClothes() {
+  return presets.outfits[currentState.outfit]?.clothes || "usual_clothes";
 }
 
 function updatePreviewCharacter() {
-  // プレビュー更新
-  console.log("プレビュー更新:", currentState);
+  createCharacter();
+}
+
+function createSimplePreview() {
+  // 既存のステージをクリア
+  app.stage.removeChildren();
+  
+  // 背景
+  const background = new PIXI.Graphics();
+  background.beginFill(0x333333);
+  background.drawRect(0, 0, 600, 800);
+  background.endFill();
+  app.stage.addChild(background);
+  
+  // キャラクター代替表示
+  const characterBg = new PIXI.Graphics();
+  characterBg.beginFill(0x4CAF50);
+  characterBg.drawRoundedRect(150, 200, 300, 400, 20);
+  characterBg.endFill();
+  app.stage.addChild(characterBg);
+  
+  // メインテキスト
+  const titleText = new PIXI.Text('ずんだもん', {
+    fontFamily: 'Arial',
+    fontSize: 32,
+    fill: 0xFFFFFF,
+    fontWeight: 'bold'
+  });
+  titleText.x = 300;
+  titleText.y = 280;
+  titleText.anchor.set(0.5);
+  app.stage.addChild(titleText);
+  
+  // 状態表示テキスト
+  const statusText = new PIXI.Text('プレビュー表示中\n\n操作は右側のパネルで行えます\n実際の表示は index.html で確認', {
+    fontFamily: 'Arial',
+    fontSize: 16,
+    fill: 0xFFFFFF,
+    align: 'center'
+  });
+  statusText.x = 300;
+  statusText.y = 380;
+  statusText.anchor.set(0.5);
+  app.stage.addChild(statusText);
+  
+  console.log("✅ 簡易プレビュー作成完了");
+  updateCharacterStatus("プレビュー表示完了", true);
 }
 
 // ステータス表示更新
@@ -301,6 +440,24 @@ function updateConnectionStatus(status) {
         element.className = "status-item disconnected";
         break;
     }
+  }
+}
+
+function updateDebugStatus(elementId, text, isGood) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.textContent = text;
+    element.className = isGood ? "status-item connected" : "status-item disconnected";
+  } else {
+    console.log(`[${elementId}] ${text} (${isGood ? 'OK' : 'ERROR'})`);
+  }
+}
+
+function updateCharacterStatus(text, isGood) {
+  const element = document.getElementById('character-status');
+  if (element) {
+    element.textContent = text;
+    element.className = isGood ? "status-item connected" : "status-item disconnected";
   }
 }
 
@@ -334,3 +491,136 @@ document.addEventListener("keydown", (event) => {
     }
   }
 });
+
+
+// まばたきアニメーション実行
+function performBlink() {
+  if (sprites.eyeWhite && sprites.eyeBlack) {
+    // 目を閉じる
+    const originalEyeWhite = sprites.eyeWhite.texture;
+    const originalEyeBlack = sprites.eyeBlack.visible;
+    
+    // 閉じた目のテクスチャがある場合
+    if (app.loader.resources["sleepy_eye"]) {
+      sprites.eyeWhite.texture = app.loader.resources["sleepy_eye"].texture;
+      sprites.eyeBlack.visible = false;
+    }
+    
+    // 150ms後に目を開く
+    setTimeout(() => {
+      sprites.eyeWhite.texture = originalEyeWhite;
+      sprites.eyeBlack.visible = originalEyeBlack;
+    }, 150);
+  } else {
+    console.log("👁️ まばたき（簡易プレビューモード）");
+  }
+}
+
+// 音量による口パク（簡易版）
+function updateMouthByVolume(volume) {
+  if (sprites.mouth) {
+    // 音量に応じて口の形を変える
+    if (volume > 0.4 && app.loader.resources["hoa"]) {
+      sprites.mouth.texture = app.loader.resources["hoa"].texture;
+    } else if (volume > 0.1 && app.loader.resources["muhu"]) {
+      sprites.mouth.texture = app.loader.resources["muhu"].texture;
+    }
+  }
+}
+
+function handleServerMessage(data) {
+  console.log("← サーバー:", data);
+  
+  switch(data.action) {
+    case "speech_start":
+      console.log("音声開始:", data.text);
+      document.getElementById('speech-text').value = '';
+      // 音声開始時に口パクアニメーション開始
+      startSpeechAnimation(data.text);
+      break;
+      
+    case "volume_level":
+      console.log("音量レベル:", data.level);
+      updateMouthByVolume(data.level);
+      break;
+      
+    case "speech_end":
+      console.log("音声終了");
+      // 口を閉じる
+      resetMouth();
+      break;
+      
+    case "blink":
+      console.log("まばたき実行");
+      performBlink();
+      break;
+      
+    case "speech_error":
+      console.error("音声エラー:", data.error);
+      resetMouth();
+      break;
+      
+    default:
+      console.log("未知のメッセージ:", data);
+  }
+}
+
+let speechAnimationInterval = null;
+
+// 音声アニメーション開始
+function startSpeechAnimation(text) {
+  // 既存のアニメーション停止
+  if (speechAnimationInterval) {
+    clearInterval(speechAnimationInterval);
+  }
+  
+  // テキストの長さから音声時間を推定（文字数 × 0.15秒）
+  const estimatedDuration = text.length * 150;
+  let elapsed = 0;
+  
+  // 0.2秒間隔で口の形を変える
+  speechAnimationInterval = setInterval(() => {
+    if (elapsed >= estimatedDuration) {
+      resetMouth();
+      clearInterval(speechAnimationInterval);
+      speechAnimationInterval = null;
+      return;
+    }
+    
+    // ランダムに口の形を変える
+    const mouthStates = ["muhu", "hoa"];
+    const randomMouth = mouthStates[Math.floor(Math.random() * mouthStates.length)];
+    changeMouthTexture(randomMouth);
+    
+    elapsed += 200;
+  }, 200);
+}
+
+// 口のテクスチャを変更
+function changeMouthTexture(textureKey) {
+  if (sprites.mouth && app.loader.resources[textureKey]) {
+    sprites.mouth.texture = app.loader.resources[textureKey].texture;
+  }
+}
+
+// 口をリセット（閉じた状態）
+function resetMouth() {
+  if (speechAnimationInterval) {
+    clearInterval(speechAnimationInterval);
+    speechAnimationInterval = null;
+  }
+  changeMouthTexture("muhu"); // 閉じた口に戻す
+}
+
+// 音量による口パク（リアルタイム版）
+function updateMouthByVolume(volume) {
+  if (sprites.mouth) {
+    if (volume > 0.4) {
+      changeMouthTexture("hoa"); // 大きく開く
+    } else if (volume > 0.1) {
+      changeMouthTexture("muhu"); // 少し開く
+    } else {
+      changeMouthTexture("muhu"); // 閉じる
+    }
+  }
+}
