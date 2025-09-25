@@ -36,22 +36,18 @@ Thumbs.db
 *.npy
 *.npz
 
-# メディアファイル
+# メディアファイル（これが重要）
 *.mp4
 *.avi
 *.mov
 *.mkv
 *.wav
 *.mp3
+*.png
+*.jpg
+*.jpeg
 
 # キャプチャ系
 Bandicam/
 OBS/
 .cache/
-
-# 含めるファイル（必要に応じて）
-!assets/
-!assets/**
-!*.png
-!*.jpg
-!*.jpeg
