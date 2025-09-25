@@ -1,0 +1,57 @@
+# Python venv / キャッシュ
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ログ / 一時ファイル
+logs/
+*.log
+*.tmp
+*.swp
+audio_temp/
+
+# プロジェクト固有の大容量ディレクトリ
+import/
+timeline/
+obs_timeline/
+
+# Node / Web 系
+node_modules/
+dist/
+build/
+
+# OSごとの不要ファイル
+.DS_Store
+Thumbs.db
+
+# 環境変数
+.env
+*.env
+
+# データベース / キャッシュ
+*.sqlite3
+*.db
+*.pkl
+*.npy
+*.npz
+
+# メディアファイル
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wav
+*.mp3
+
+# キャプチャ系
+Bandicam/
+OBS/
+.cache/
+
+# 含めるファイル（必要に応じて）
+!assets/
+!assets/**
+!*.png
+!*.jpg
+!*.jpeg

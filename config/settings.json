@@ -1,0 +1,42 @@
+{
+  "directories": {
+    "import_dir": "./import",
+    "timeline_dir": "./timeline", 
+    "obs_timeline_dir": "./obs_timeline",
+    "assets_dir": "./assets",
+    "audio_temp_dir": "./audio_temp",
+    "logs_dir": "./logs"
+  },
+  "servers": {
+    "http_port": 5000,
+    "websocket_browser_port": 8767,
+    "websocket_control_port": 8768,
+    "voicevox_host": "localhost",
+    "voicevox_port": 50021,
+    "obs_websocket_host": "localhost",
+    "obs_websocket_port": 4455,
+    "obs_password": ""
+  },
+  "characters": {
+    "zundamon": {
+      "voice_id": 3,
+      "default_expression": "normal",
+      "default_outfit": "usual",
+      "default_pose": "basic",
+      "default_position": "center"
+    }
+  },
+  "timeline": {
+    "auto_blink_interval": 5.0,
+    "speech_end_wait": 1.0,
+    "comment_response_timeout": 30.0
+  },
+  "plugins": {
+    "enabled": [],
+    "plugin_dir": "./plugins"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "./logs/system.log"
+  }
+}

@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ずんだもんタイムラインシステム マニュアル</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .toc {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .toc h2 {
+            margin-top: 0;
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .toc li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .toc a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .toc a:hover {
+            color: #4CAF50;
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        
+        .section h3 {
+            color: #666;
+            margin-top: 25px;
+        }
+        
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+        
+        .command {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-left: 4px solid #fdcb6e;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin: 15px 0;
+        }
+        
+        .info {
+            background: #cce7ff;
+            border: 1px solid #99d3ff;
+            border-left: 4px solid #0984e3;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin: 15px 0;
+        }
+        
+        .file-tree {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .step-number {
+            background: #4CAF50;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .port-table {
+            font-size: 14px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            border-top: 1px solid #eee;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍃 ずんだもんタイムラインシステム</h1>
+        <p>統合タイムラインシステム連携型 ずんだもん配信システム</p>
+    </div>
+
+    <div class="toc">
+        <h2>📋 目次</h2>
+        <ul>
+            <li><a href="#overview">システム概要</a></li>
+            <li><a href="#requirements">必要環境</a></li>
+            <li><a href="#installation">インストール・セットアップ</a></li>
+            <li><a href="#quickstart">クイックスタート</a></li>
+            <li><a href="#usage">基本的な使い方</a></li>
+            <li><a href="#timeline-creation">タイムライン作成</a></li>
+            <li><a href="#obs-integration">OBS連携</a></li>
+            <li><a href="#plugin-system">プラグインシステム</a></li>
+            <li><a href="#api-reference">API リファレンス</a></li>
+            <li><a href="#troubleshooting">トラブルシューティング</a></li>
+            <li><a href="#configuration">設定詳細</a></li>
+        </ul>
+    </div>
+
+    <div class="section" id="overview">
+        <h2>🎯 システム概要</h2>
+        <p>ずんだもんタイムラインシステムは、統合タイムラインシステムからWebSocket経由で制御される高機能なずんだもん配信システムです。</p>
+        
+        <h3>主な機能</h3>
+        <ul>
+            <li><strong>🎤 音声合成</strong>：VOICEVOXと連携したリアルタイム音声合成</li>
+            <li><strong>👤 キャラクター制御</strong>：表情・ポーズ・衣装の動的変更</li>
+            <li><strong>🎬 OBS連携</strong>：シーン切り替え、テキスト更新の自動化</li>
+            <li><strong>⏰ タイムライン実行</strong>：事前作成したシナリオの自動実行</li>
+            <li><strong>💬 コメント対応</strong>：リアルタイムコメント割り込み機能</li>
+            <li><strong>🔌 プラグインシステム</strong>：カスタム機能の追加</li>
+            <li><strong>🖥️ GUI管理</strong>：直感的な管理インターフェース</li>
+        </ul>
+
+        <h3>システム構成</h3>
+        <div class="file-tree">
+統合タイムラインシステム
+  ├── 開演準備画面 (30秒)
+  ├── オープニング動画 (15秒)  
+  ├── ずんだもんシステム起動 ←── このシステム
+  └── エンディング動画 (10秒)
+        </div>
+    </div>
+
+    <div class="section" id="requirements">
+        <h2>📋 必要環境</h2>
+        
+        <h3>システム要件</h3>
+        <ul>
+            <li><strong>OS</strong>：Windows 10/11, macOS 10.15+, Ubuntu 18.04+</li>
+            <li><strong>Python</strong>：3.8以上</li>
+            <li><strong>メモリ</strong>：4GB以上（8GB推奨）</li>
+            <li><strong>ストレージ</strong>：2GB以上の空き容量</li>
+        </ul>
+
+        <h3>必要ソフトウェア</h3>
+        <table>
+            <tr>
+                <th>ソフトウェア</th>
+                <th>バージョン</th>
+                <th>必須度</th>
+                <th>備考</th>
+            </tr>
+            <tr>
+                <td>VOICEVOX</td>
+                <td>0.14.0+</td>
+                <td>必須</td>
+                <td>音声合成エンジン</td>
+            </tr>
+            <tr>
+                <td>OBS Studio</td>
+                <td>28.0+</td>
+                <td>必須</td>
+                <td>配信・録画ソフト</td>
+            </tr>
+            <tr>
+                <td>Webブラウザ</td>
+                <td>Chrome 90+</td>
+                <td>必須</td>
+                <td>キャラクター表示</td>
+            </tr>
+        </table>
+
+        <h3>Pythonライブラリ</h3>
+        <div class="code-block">
+            <pre>aiohttp==3.8.4
+asyncio-mqtt==0.16.1  
+fastapi==0.104.1
+numpy==1.24.3
+obs-websocket-py==1.0.1
+Pillow==10.0.0
+pyaudio==0.2.11
+soundfile==0.12.1
+tkinter-async==0.3.0
+uvicorn==0.23.2
+websockets==11.0.3</pre>
+        </div>
+    </div>
+
+    <div class="section" id="installation">
+        <h2>⚙️ インストール・セットアップ</h2>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>プロジェクトクローン</strong>
+            <div class="command">git clone https://github.com/your-repo/zundamon-timeline-system.git<br>cd zundamon-timeline-system</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>仮想環境作成</strong>
+            <div class="command">python -m venv venv<br># Windows<br>venv\Scripts\activate<br># macOS/Linux<br>source venv/bin/activate</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>依存関係インストール</strong>
+            <div class="command">pip install -r requirements.txt</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>VOICEVOXセットアップ</strong>
+            <p>1. <a href="https://voicevox.hiroshiba.jp/" target="_blank">VOICEVOX公式サイト</a>からダウンロード</p>
+            <p>2. インストール後、VOICEVOX起動</p>
+            <p>3. 「設定」→「エンジン」で「localhost:50021で起動」を確認</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">5</span>
+            <strong>OBS Studio設定</strong>
+            <p>1. OBS Studio起動</p>
+            <p>2. 「ツール」→「WebSocket サーバー設定」</p>
+            <p>3. 「サーバーを有効にする」をチェック</p>
+            <p>4. ポート：4455、パスワード設定（任意）</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">6</span>
+            <strong>アセットファイル配置</strong>
+            <p>ずんだもんの立ち絵ファイルを <code>assets/zundamon_en/</code> に配置</p>
+            <div class="warning">
+                <strong>⚠️ 注意</strong><br>
+                立ち絵素材は各自で用意する必要があります。公式ガイドラインに従って使用してください。
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="quickstart">
+        <h2>🚀 クイックスタート</h2>
+
+        <h3>統合システムからの起動</h3>
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>VOICEVOX起動確認</strong>
+            <div class="command">curl http://localhost:50021/version</div>
+            <div class="success">正常な場合、バージョン情報が返されます</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>統合システム起動</strong>
+            <div class="command">python integrated_timeline_system.py</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>動作確認</strong>
+            <p>以下の順序で動作します：</p>
+            <ul>
+                <li>開演準備画面 (30秒)</li>
+                <li>オープニング動画 (15秒)</li>
+                <li>ずんだもんシステム自動起動</li>
+                <li>プロジェクト_001のタイムライン実行</li>
+                <li>エンディング動画</li>
+            </ul>
+        </div>
+
+        <h3>スタンドアローン起動（開発・テスト用）</h3>
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>サーバー起動</strong>
+            <div class="command">python server/main.py</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>ブラウザアクセス</strong>
+            <ul>
+                <li>メイン画面：<a href="http://localhost:5000/web/index.html">http://localhost:5000/web/index.html</a></li>
+                <li>管理画面：<a href="http://localhost:5000/web/admin.html">http://localhost:5000/web/admin.html</a></li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>GUI管理画面（オプション）</strong>
+            <div class="command">python gui/main_window.py</div>
+        </div>
+    </div>
+
+    <div class="section" id="usage">
+        <h2>📖 基本的な使い方</h2>
+
+        <h3>Web管理画面</h3>
+        <p><code>http://localhost:5000/web/admin.html</code> で各種制御が可能：</p>
+        
+        <table>
+            <tr>
+                <th>機能</th>
+                <th>説明</th>
+                <th>操作方法</th>
+            </tr>
+            <tr>
+                <td>表情変更</td>
+                <td>通常/喜び/怒り/悲しみ/疲れ</td>
+                <td>表情ボタンクリック</td>
+            </tr>
+            <tr>
+                <td>ポーズ変更</td>
+                <td>基本/指差し/手上げ/考える/マイク</td>
+                <td>ポーズボタンクリック</td>
+            </tr>
+            <tr>
+                <td>衣装変更</td>
+                <td>いつもの服/制服/水着</td>
+                <td>衣装ボタンクリック</td>
+            </tr>
+            <tr>
+                <td>音声合成</td>
+                <td>任意のテキストを読み上げ</td>
+                <td>テキスト入力→喋るボタン</td>
+            </tr>
+        </table>
+
+        <h3>外部プログラムからの制御</h3>
+        <p>WebSocket（ポート8768）経由で制御可能：</p>
+
+        <div class="code-block">
+            <pre>import asyncio
+import websockets
+import json
+
+async def control_zundamon():
+    uri = "ws://localhost:8768"
+    async with websockets.connect(uri) as ws:
+        # 音声合成
+        await ws.send(json.dumps({
+            "action": "speak",
+            "text": "こんにちはなのだ！"
+        }))
+        
+        # 表情変更
+        await ws.send(json.dumps({
+            "action": "change_expression",
+            "preset": "happy"
+        }))
+
+asyncio.run(control_zundamon())</pre>
+        </div>
+
+        <h3>ポートマッピング</h3>
+        <table class="port-table">
+            <tr>
+                <th>ポート</th>
+                <th>プロトコル</th>
+                <th>用途</th>
+                <th>接続先</th>
+            </tr>
+            <tr>
+                <td>5000</td>
+                <td>HTTP</td>
+                <td>Web画面配信</td>
+                <td>ブラウザ</td>
+            </tr>
+            <tr>
+                <td>8767</td>
+                <td>WebSocket</td>
+                <td>ブラウザ制御</td>
+                <td>index.html, admin.html</td>
+            </tr>
+            <tr>
+                <td>8768</td>
+                <td>WebSocket</td>
+                <td>外部制御API</td>
+                <td>外部プログラム</td>
+            </tr>
+            <tr>
+                <td>8769</td>
+                <td>WebSocket</td>
+                <td>統合システム連携</td>
+                <td>integrated_timeline_system</td>
+            </tr>
+            <tr>
+                <td>50021</td>
+                <td>HTTP</td>
+                <td>VOICEVOX API</td>
+                <td>VOICEVOX</td>
+            </tr>
+            <tr>
+                <td>4455</td>
+                <td>WebSocket</td>
+                <td>OBS制御</td>
+                <td>OBS Studio</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" id="timeline-creation">
+        <h2>📝 タイムライン作成</h2>
+
+        <h3>プロジェクト構造</h3>
+        <div class="file-tree">
+import/timeline_projects/project_001/
+  ├── timeline.json          # ずんだもんタイムライン
+  ├── obs_timeline.json      # OBS制御タイムライン  
+  ├── backgrounds/           # 背景画像
+  ├── videos/               # 動画素材
+  ├── audio/                # 音声素材
+  └── texts/                # テキスト素材
+        </div>
+
+        <h3>timeline.json の構造</h3>
+        <div class="code-block">
+            <pre>{
+  "title": "配信タイトル",
+  "listener_name": "リスナー名",
+  "nickname": "ニックネーム",
+  "other_text": "その他表示テキスト",
+  "timeline": [
+    {
+      "time": 0.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "こんにちはなのだ！",
+      "blink": true
+    },
+    {
+      "time": 3.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy", 
+      "outfit": "usual",
+      "pose": "raise_hand",
+      "text": "今日もがんばるのだ！",
+      "blink": true
+    }
+  ]
+}</pre>
+        </div>
+
+        <h3>パラメータ詳細</h3>
+        <table>
+            <tr>
+                <th>パラメータ</th>
+                <th>型</th>
+                <th>説明</th>
+                <th>可能な値</th>
+            </tr>
+            <tr>
+                <td>time</td>
+                <td>float</td>
+                <td>実行タイミング（秒）</td>
+                <td>0.0以上</td>
+            </tr>
+            <tr>
+                <td>character</td>
+                <td>string</td>
+                <td>キャラクター名</td>
+                <td>zundamon（将来的に拡張予定）</td>
+            </tr>
+            <tr>
+                <td>position</td>
+                <td>string</td>
+                <td>画面上の位置</td>
+                <td>left, center, right</td>
+            </tr>
+            <tr>
+                <td>expression</td>
+                <td>string</td>
+                <td>表情</td>
+                <td>normal, happy, angry, sad, tired</td>
+            </tr>
+            <tr>
+                <td>outfit</td>
+                <td>string</td>
+                <td>衣装</td>
+                <td>usual, uniform, casual</td>
+            </tr>
+            <tr>
+                <td>pose</td>
+                <td>string</td>
+                <td>ポーズ</td>
+                <td>basic, point, raise_hand, think, mic</td>
+            </tr>
+            <tr>
+                <td>text</td>
+                <td>string</td>
+                <td>読み上げテキスト</td>
+                <td>任意の文字列</td>
+            </tr>
+            <tr>
+                <td>blink</td>
+                <td>boolean</td>
+                <td>まばたき有効/無効</td>
+                <td>true, false</td>
+            </tr>
+        </table>
+
+        <h3>obs_timeline.json の構造</h3>
+        <div class="code-block">
+            <pre>{
+  "timeline": [
+    {
+      "time": 0.0,
+      "action": "update_text",
+      "target": "title_text",
+      "value": "配信タイトル"
+    },
+    {
+      "time": 1.0,
+      "action": "set_source_visibility",
+      "target": "background_image", 
+      "value": "true"
+    },
+    {
+      "time": 5.0,
+      "action": "switch_scene",
+      "scene_name": "ずんだもん配信画面"
+    }
+  ]
+}</pre>
+        </div>
+
+        <h3>OBSアクション一覧</h3>
+        <table>
+            <tr>
+                <th>アクション</th>
+                <th>説明</th>
+                <th>必要パラメータ</th>
+            </tr>
+            <tr>
+                <td>switch_scene</td>
+                <td>シーン切り替え</td>
+                <td>scene_name</td>
+            </tr>
+            <tr>
+                <td>update_text</td>
+                <td>テキストソース更新</td>
+                <td>target（ソース名）, value（テキスト）</td>
+            </tr>
+            <tr>
+                <td>set_source_visibility</td>
+                <td>ソース表示/非表示</td>
+                <td>target（ソース名）, value（true/false）</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" id="obs-integration">
+        <h2>🎬 OBS連携</h2>
+
+        <h3>OBS設定手順</h3>
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>WebSocketサーバー有効化</strong>
+            <p>OBS Studio → ツール → WebSocketサーバー設定</p>
+            <ul>
+                <li>「サーバーを有効にする」をチェック</li>
+                <li>ポート：4455（デフォルト）</li>
+                <li>パスワード設定（config/settings.jsonに記載）</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>シーン構成例</strong>
+            <ul>
+                <li><strong>開演準備画面</strong>：カウントダウンタイマー、BGM</li>
+                <li><strong>オープニング動画</strong>：イントロ動画ソース</li>
+                <li><strong>ずんだもん配信画面</strong>：ブラウザソース + テキスト</li>
+                <li><strong>エンディング動画</strong>：アウトロ動画ソース</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>ずんだもん配信画面設定</strong>
+            <p>ブラウザソース追加：</p>
+            <ul>
+                <li>URL：<code>http://localhost:5000/web/index.html</code></li>
+                <li>幅：1200, 高さ：800</li>
+                <li>「ページが読み込まれたときにブラウザソースを更新」チェック</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>テキストソース設定</strong>
+            <p>以下のテキストソースを作成：</p>
+            <table>
+                <tr>
+                    <th>ソース名</th>
+                    <th>用途</th>
+                    <th>初期値</th>
+                </tr>
+                <tr>
+                    <td>title_text</td>
+                    <td>配信タイトル表示</td>
+                    <td>（空）</td>
+                </tr>
+                <tr>
+                    <td>listener_text</td>
+                    <td>リスナー名表示</td>
+                    <td>（空）</td>
+                </tr>
+                <tr>
+                    <td>nickname_text</td>
+                    <td>ニックネーム表示</td>
+                    <td>（空）</td>
+                </tr>
+                <tr>
+                    <td>other_text</td>
+                    <td>その他テキスト</td>
+                    <td>（空）</td>
+                </tr>
+                <tr>
+                    <td>comment_username</td>
+                    <td>コメントユーザー名</td>
+                    <td>（空）</td>
+                </tr>
+                <tr>
+                    <td>comment_text</td>
+                    <td>コメント内容</td>
+                    <td>（空）</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>自動シーン切り替え</h3>
+        <p>システムが以下のタイミングで自動的にシーンを切り替えます：</p>
+        <div class="code-block">
+            <pre>統合タイムライン実行時：
+0秒    → 開演準備画面
+30秒   → オープニング動画  
+45秒   → ずんだもん配信画面（システム起動）
+終了時 → エンディング動画</pre>
+        </div>
+    </div>
+
+    <div class="section" id="plugin-system">
+        <h2>🔌 プラグインシステム</h2>
+        <h3>プラグイン作成</h3>
+        <p>カスタム機能を追加するためのプラグインシステムです。</p>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>基本構造</strong>
+            <p><code>plugins/</code>ディレクトリにPythonファイルを作成：</p>
+            <div class="code-block">
+                <pre># plugins/my_plugin.py
+import logging
+from . import BasePlugin
+
+class MyPlugin(BasePlugin):
+    def __init__(self, config):
+        super().__init__(config)
+        self.logger = logging.getLogger(__name__)
+    
+    async def on_speech_start(self, text):
+        """音声合成開始時の処理"""
+        self.logger.info(f"発話開始: {text}")
+    
+    async def on_comment_received(self, comment_data):
+        """コメント受信時の処理"""
+        username = comment_data.get("username", "")
+        text = comment_data.get("text", "")
+        self.logger.info(f"コメント: {username} - {text}")
+
+# プラグインクラスのエイリアス
+Plugin = MyPlugin</pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>プラグイン有効化</strong>
+            <p><code>config/settings.json</code>で有効化：</p>
+            <div class="code-block">
+                <pre>{
+  "plugins": {
+    "enabled": ["my_plugin", "example_plugin"],
+    "plugin_dir": "./plugins"
+  }
+}</pre>
+            </div>
+        </div>
+
+        <h3>利用可能なフック</h3>
+        <table>
+            <tr>
+                <th>フック名</th>
+                <th>呼び出しタイミング</th>
+                <th>引数</th>
+            </tr>
+            <tr>
+                <td>on_system_start()</td>
+                <td>システム開始時</td>
+                <td>なし</td>
+            </tr>
+            <tr>
+                <td>on_system_stop()</td>
+                <td>システム終了時</td>
+                <td>なし</td>
+            </tr>
+            <tr>
+                <td>on_timeline_start()</td>
+                <td>タイムライン開始時</td>
+                <td>なし</td>
+            </tr>
+            <tr>
+                <td>on_timeline_end()</td>
+                <td>タイムライン終了時</td>
+                <td>なし</td>
+            </tr>
+            <tr>
+                <td>on_speech_start(text)</td>
+                <td>音声合成開始時</td>
+                <td>text: 読み上げテキスト</td>
+            </tr>
+            <tr>
+                <td>on_speech_end()</td>
+                <td>音声合成終了時</td>
+                <td>なし</td>
+            </tr>
+            <tr>
+                <td>on_comment_received(data)</td>
+                <td>コメント受信時</td>
+                <td>data: コメントデータ</td>
+            </tr>
+            <tr>
+                <td>on_scene_change(scene_name)</td>
+                <td>OBSシーン変更時</td>
+                <td>scene_name: シーン名</td>
+            </tr>
+            <tr>
+                <td>on_error(error)</td>
+                <td>エラー発生時</td>
+                <td>error: エラー情報</td>
+            </tr>
+        </table>
+
+        <h3>プラグイン例</h3>
+        <div class="code-block">
+            <pre># plugins/statistics_plugin.py
+class StatisticsPlugin(BasePlugin):
+    def __init__(self, config):
+        super().__init__(config)
+        self.speech_count = 0
+        self.comment_count = 0
+        self.start_time = None
+    
+    async def on_timeline_start(self):
+        self.start_time = time.time()
+        self.speech_count = 0
+        self.comment_count = 0
+    
+    async def on_speech_start(self, text):
+        self.speech_count += 1
+        if self.speech_count % 10 == 0:
+            print(f"発話数: {self.speech_count}回")
+    
+    async def on_comment_received(self, comment_data):
+        self.comment_count += 1
+        print(f"コメント数: {self.comment_count}件")
+    
+    async def on_timeline_end(self):
+        duration = time.time() - self.start_time
+        print(f"配信時間: {duration:.1f}秒")
+        print(f"総発話数: {self.speech_count}回")
+        print(f"総コメント数: {self.comment_count}件")</pre>
+        </div>
+    </div>
+
+    <div class="section" id="api-reference">
+        <h2>🔗 API リファレンス</h2>
+
+        <h3>WebSocket制御API（ポート8768）</h3>
+
+        <h4>音声合成</h4>
+        <div class="code-block">
+            <pre>{
+  "action": "speak",
+  "text": "こんにちはなのだ！",
+  "speed": 1.0,        // 発話速度（オプション）
+  "pitch": 0.0,        // 音高（オプション） 
+  "intonation": 1.0    // イントネーション（オプション）
+}</pre>
+        </div>
+
+        <h4>キャラクター制御</h4>
+        <div class="code-block">
+            <pre>// 表情変更
+{
+  "action": "change_expression",
+  "preset": "happy"
+}
+
+// ポーズ変更
+{
+  "action": "change_pose", 
+  "preset": "raise_hand"
+}
+
+// 衣装変更
+{
+  "action": "change_outfit",
+  "preset": "uniform"
+}
+
+// まばたき
+{
+  "action": "blink"
+}</pre>
+        </div>
+
+        <h4>コメント割り込み</h4>
+        <div class="code-block">
+            <pre>{
+  "action": "comment_interrupt",
+  "username": "視聴者名",
+  "text": "コメント内容",
+  "timestamp": "2024-01-01T12:00:00Z"
+}</pre>
+        </div>
+
+        <h3>統合システム連携API（ポート8769）</h3>
+
+        <h4>システム制御</h4>
+        <div class="code-block">
+            <pre>// タイムライン開始
+{
+  "action": "start_timeline",
+  "project_name": "project_001"
+}
+
+// 緊急停止
+{
+  "action": "emergency_stop"
+}
+
+// 生存確認
+{
+  "action": "ping"
+}</pre>
+        </div>
+
+        <h4>ステータス応答</h4>
+        <div class="code-block">
+            <pre>// 準備完了
+{
+  "action": "system_ready"
+}
+
+// タイムライン完了
+{
+  "action": "timeline_completed",
+  "duration": 300.5,
+  "actions_executed": 25
+}
+
+// エラー通知
+{
+  "action": "timeline_error", 
+  "error": "VOICEVOX connection failed"
+}</pre>
+        </div>
+
+        <h3>HTTP API（ポート5000）</h3>
+        <div class="code-block">
+            <pre>// システム状態取得
+GET /api/status
+
+// 設定取得
+GET /api/config
+
+// プロジェクト一覧取得  
+GET /api/projects</pre>
+        </div>
+    </div>
+
+    <div class="section" id="troubleshooting">
+        <h2>🛠️ トラブルシューティング</h2>
+
+        <h3>よくある問題と解決方法</h3>
+
+        <div class="warning">
+            <strong>❌ VOICEVOXに接続できません</strong>
+            <p><strong>解決方法:</strong></p>
+            <ul>
+                <li>VOICEVOXが起動しているか確認</li>
+                <li><code>http://localhost:50021/version</code> にアクセスして応答確認</li>
+                <li>ファイアウォールの設定確認</li>
+                <li>VOICEVOXの設定で「外部からのアクセスを許可」をチェック</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>❌ OBSで画面が表示されません</strong>
+            <p><strong>解決方法:</strong></p>
+            <ul>
+                <li>ブラウザソースのURL確認: <code>http://localhost:5000/web/index.html</code></li>
+                <li>OBSでブラウザソースを右クリック→更新</li>
+                <li>OBSのブラウザソース設定でハードウェアアクセラレーションを無効化</li>
+                <li>ブラウザで直接アクセスして表示確認</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>❌ WebSocket接続エラー</strong>
+            <p><strong>解決方法:</strong></p>
+            <ul>
+                <li>ポート番号の重複確認</li>
+                <li>ファイアウォール設定確認</li>
+                <li>他のアプリケーションがポートを使用していないか確認</li>
+                <li><code>netstat -an | grep 8767</code> でポート使用状況確認</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>❌ 音声が再生されません</strong>
+            <p><strong>解決方法:</strong></p>
+            <ul>
+                <li>システムの音量設定確認</li>
+                <li>PyAudioライブラリの動作確認</li>
+                <li>音声デバイスのドライバー更新</li>
+                <li><code>pip install pyaudio soundfile</code> で再インストール</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>❌ キャラクターが表示されません</strong>
+            <p><strong>解決方法:</strong></p>
+            <ul>
+                <li>アセットファイルのパス確認</li>
+                <li>PixiJSのエラーをブラウザコンソールで確認</li>
+                <li>画像ファイルの形式確認（PNG推奨）</li>
+                <li>ブラウザのキャッシュクリア</li>
+            </ul>
+        </div>
+
+        <h3>ログ確認方法</h3>
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>システムログ</strong>
+            <p>場所: <code>logs/system.log</code></p>
+            <div class="command">tail -f logs/system.log</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>ブラウザコンソール</strong>
+            <p>F12キー → Console タブでエラー確認</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>デバッグモード</strong>
+            <p>index.htmlでF12キーを押してデバッグ表示切り替え</p>
+        </div>
+
+        <h3>パフォーマンス最適化</h3>
+        <ul>
+            <li><strong>メモリ使用量削減</strong>：不要なアセットファイル削除</li>
+            <li><strong>CPU使用量削減</strong>：まばたき間隔を長めに設定</li>
+            <li><strong>ネットワーク負荷軽減</strong>：ローカルアセット使用</li>
+            <li><strong>音声処理最適化</strong>：音声ファイルサイズ調整</li>
+        </ul>
+    </div>
+
+    <div class="section" id="configuration">
+        <h2>⚙️ 設定詳細</h2>
+
+        <h3>config/settings.json 完全リファレンス</h3>
+        <div class="code-block">
+            <pre>{
+  "directories": {
+    "import_dir": "./import",                // プロジェクトインポートディレクトリ
+    "timeline_dir": "./timeline",            // 生成タイムラインディレクトリ
+    "obs_timeline_dir": "./obs_timeline",    // OBSタイムラインディレクトリ
+    "assets_dir": "./assets",                // アセットディレクトリ
+    "audio_temp_dir": "./audio_temp",        // 音声一時ファイルディレクトリ
+    "logs_dir": "./logs"                     // ログファイルディレクトリ
+  },
+  "servers": {
+    "http_port": 5000,                       // HTTPサーバーポート
+    "websocket_browser_port": 8767,          // ブラウザ用WebSocketポート
+    "websocket_control_port": 8768,          // 制御用WebSocketポート
+    "voicevox_host": "localhost",            // VOICEVOXホスト
+    "voicevox_port": 50021,                  // VOICEVOXポート
+    "obs_websocket_host": "localhost",       // OBS WebSocketホスト
+    "obs_websocket_port": 4455,              // OBS WebSocketポート
+    "obs_password": ""                       // OBS WebSocketパスワード
+  },
+  "characters": {
+    "zundamon": {
+      "voice_id": 3,                         // VOICEVOX音声ID
+      "default_expression": "normal",        // デフォルト表情
+      "default_outfit": "usual",             // デフォルト衣装
+      "default_pose": "basic",               // デフォルトポーズ
+      "default_position": "center"           // デフォルト位置
+    }
+  },
+  "timeline": {
+    "auto_blink_interval": 5.0,              // 自動まばたき間隔（秒）
+    "speech_end_wait": 1.0,                  // 発話終了待機時間（秒）
+    "comment_response_timeout": 30.0         // コメント応答タイムアウト（秒）
+  },
+  "plugins": {
+    "enabled": [],                           // 有効プラグインリスト
+    "plugin_dir": "./plugins"                // プラグインディレクトリ
+  },
+  "logging": {
+    "level": "INFO",                         // ログレベル
+    "file": "./logs/system.log"              // ログファイルパス
+  }
+}</pre>
+        </div>
+
+        <h3>VOICEVOX音声ID一覧</h3>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>キャラクター</th>
+                <th>スタイル</th>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>ずんだもん</td>
+                <td>ノーマル</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>ずんだもん</td>
+                <td>あまあま</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>ずんだもん</td>
+                <td>つよがり</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>ずんだもん</td>
+                <td>セクシー</td>
+            </tr>
+        </table>
+
+        <h3>ログレベル設定</h3>
+        <table>
+            <tr>
+                <th>レベル</th>
+                <th>出力内容</th>
+                <th>用途</th>
+            </tr>
+            <tr>
+                <td>DEBUG</td>
+                <td>詳細な動作情報</td>
+                <td>開発・デバッグ時</td>
+            </tr>
+            <tr>
+                <td>INFO</td>
+                <td>一般的な動作情報</td>
+                <td>通常運用時（推奨）</td>
+            </tr>
+            <tr>
+                <td>WARNING</td>
+                <td>警告メッセージのみ</td>
+                <td>本番運用時</td>
+            </tr>
+            <tr>
+                <td>ERROR</td>
+                <td>エラーメッセージのみ</td>
+                <td>問題発生時のみ</td>
+            </tr>
+        </table>
+
+        <h3>環境変数での設定オーバーライド</h3>
+        <div class="code-block">
+            <pre># Windows
+set ZUNDAMON_VOICEVOX_HOST=192.168.1.100
+set ZUNDAMON_OBS_PASSWORD=your_password
+
+# macOS/Linux  
+export ZUNDAMON_VOICEVOX_HOST=192.168.1.100
+export ZUNDAMON_OBS_PASSWORD=your_password</pre>
+        </div>
+
+        <h3>パフォーマンス調整</h3>
+        <div class="code-block">
+            <pre>{
+  "performance": {
+    "max_concurrent_speech": 1,              // 同時音声合成数
+    "audio_buffer_size": 1024,               // 音声バッファサイズ
+    "animation_fps": 30,                     // アニメーションFPS
+    "websocket_ping_interval": 5.0,          // WebSocketping間隔
+    "cleanup_temp_files_hours": 24           // 一時ファイル削除間隔
+  }
+}</pre>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📚 追加リソース</h2>
+
+        <h3>参考リンク</h3>
+        <ul>
+            <li><a href="https://voicevox.hiroshiba.jp/" target="_blank">VOICEVOX公式サイト</a></li>
+            <li><a href="https://obsproject.com/" target="_blank">OBS Studio公式サイト</a></li>
+            <li><a href="https://zunko.jp/" target="_blank">東北ずん子・ずんだもん公式サイト</a></li>
+            <li><a href="https://pixijs.com/" target="_blank">PixiJS公式ドキュメント</a></li>
+        </ul>
+
+        <h3>コミュニティ</h3>
+        <ul>
+            <li>GitHub Issues：バグ報告・機能要望</li>
+            <li>Discord：リアルタイム質問・情報交換</li>
+            <li>Wiki：詳細なドキュメント・FAQ</li>
+        </ul>
+
+        <h3>ライセンス情報</h3>
+        <div class="info">
+            <p><strong>📄 ライセンス</strong></p>
+            <ul>
+                <li><strong>システム本体</strong>：MIT License</li>
+                <li><strong>ずんだもん素材</strong>：東北ずん子・ずんだもんプロジェクト利用規約に従う</li>
+                <li><strong>VOICEVOX</strong>：VOICEVOX利用規約に従う</li>
+                <li><strong>OBS Studio</strong>：GPL-2.0 License</li>
+            </ul>
+        </div>
+
+        <h3>更新履歴</h3>
+        <table>
+            <tr>
+                <th>バージョン</th>
+                <th>リリース日</th>
+                <th>主な変更点</th>
+            </tr>
+            <tr>
+                <td>1.0.0</td>
+                <td>2024-01-01</td>
+                <td>初期リリース</td>
+            </tr>
+            <tr>
+                <td>1.1.0</td>
+                <td>2024-01-15</td>
+                <td>プラグインシステム追加</td>
+            </tr>
+            <tr>
+                <td>1.2.0</td>
+                <td>2024-02-01</td>
+                <td>GUI管理画面追加</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 ずんだもんタイムラインシステム | 最終更新: 2024-01-01</p>
+        <p>このマニュアルは継続的に更新されています。最新情報は公式リポジトリを確認してください。</p>
+    </div>
+</body>
+</html>

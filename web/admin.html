@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ずんだもんシステム管理画面</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: #f0f0f0; 
+    }
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      display: flex; 
+      gap: 20px; 
+    }
+    .preview { 
+      width: 650px; 
+      background: white; 
+      padding: 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .controls { 
+      width: 400px; 
+      background: white; 
+      padding: 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .section { 
+      margin-bottom: 30px; 
+    }
+    .section h3 { 
+      margin: 0 0 15px 0; 
+      color: #333; 
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 5px;
+    }
+    .preset-grid { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 10px; 
+      margin-bottom: 15px; 
+    }
+    .preset-btn { 
+      padding: 10px; 
+      border: 2px solid #ddd; 
+      background: white; 
+      cursor: pointer; 
+      border-radius: 4px; 
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    .preset-btn:hover { 
+      border-color: #4CAF50; 
+    }
+    .preset-btn.active { 
+      border-color: #4CAF50; 
+      background: #e8f5e8; 
+    }
+    .speech-section { 
+      border-top: 2px solid #eee; 
+      padding-top: 20px; 
+    }
+    .speech-input { 
+      width: 100%; 
+      padding: 10px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px; 
+      margin-bottom: 10px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    .speech-btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: #4CAF50; 
+      color: white; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .speech-btn:hover { 
+      background: #45a049; 
+    }
+    .speech-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #preview-container { 
+      border: 1px solid #ddd; 
+      background: #333;
+      height: 820px;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    .status-bar {
+      background: #333;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .status-item {
+      display: inline-block;
+      margin-right: 20px;
+    }
+    .status-item.connected {
+      color: #4CAF50;
+    }
+    .status-item.disconnected {
+      color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="preview">
+      <h2>プレビュー</h2>
+      <div class="status-bar">
+        <span class="status-item" id="connection-status">WebSocket: 接続中...</span>
+        <span class="status-item" id="voice-status">VOICEVOX: 確認中...</span>
+        <span class="status-item" id="character-status">キャラクター: 読み込み中...</span>
+      </div>
+      <div id="preview-container"></div>
+    </div>
+    
+    <div class="controls">
+      <div class="section">
+        <h3>📝 表情</h3>
+        <div class="preset-grid" id="expression-buttons"></div>
+      </div>
+      
+      <div class="section">
+        <h3>🤲 ポーズ</h3>
+        <div class="preset-grid" id="pose-buttons"></div>
+      </div>
+      
+      <div class="section">
+        <h3>👗 衣装</h3>
+        <div class="preset-grid" id="outfit-buttons"></div>
+      </div>
+      
+      <div class="speech-section">
+        <h3>🎤 音声制御</h3>
+        <textarea 
+          id="speech-text" 
+          class="speech-input" 
+          rows="3" 
+          placeholder="喋らせたいテキストを入力してください..."
+        ></textarea>
+        <button id="speak-btn" class="speech-btn">喋る</button>
+      </div>
+      
+      <div class="section">
+        <h3>⚙️ システム</h3>
+        <button onclick="testBlink()" class="preset-btn">まばたきテスト</button>
+        <button onclick="resetCharacter()" class="preset-btn">キャラクターリセット</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

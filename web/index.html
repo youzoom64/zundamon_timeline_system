@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ずんだもんシステム</title>
+  <style>
+    body { 
+      margin: 0; 
+      background: transparent;
+      overflow: hidden;
+    }
+    canvas { 
+      display: block; 
+      margin: auto; 
+    }
+    #debug {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="debug">
+    <div>WebSocket: <span id="ws-status">切断中</span></div>
+    <div>キャラクター: <span id="character-status">未初期化</span></div>
+    <div>音声: <span id="speech-status">待機中</span></div>
+  </div>
+
+  <!-- PixiJS v6.5.8 CDN -->
+  <script src="https://unpkg.com/pixi.js@6.5.8/dist/browser/pixi.min.js"></script>
+  
+  <!-- メインアプリケーション -->
+  <script src="app.js"></script>
+</body>
+</html>
