@@ -18,9 +18,9 @@ from server.audio_analyzer import AudioAnalyzer
 from server.obs_controller import OBSController
 from server.plugin_manager import PluginManager
 
-# ✅ グローバル変数を最初に初期化
+# グローバル変数を最初に初期化
 browser_clients = set()
-control_clients = set()
+obs_control_clients = set()
 voicevox = None
 audio_analyzer = None
 obs_controller = None
@@ -28,7 +28,7 @@ plugin_manager = None
 volume_queue = queue.Queue()
 
 async def browser_handler(websocket):
-    """ブラウザ用WebSocketハンドラー"""
+    """ブラウザ用WebSocketハンドラー（admin.html、index.html、外部制御スクリプト用）"""
     global browser_clients
     browser_clients.add(websocket)
     logging.info(f"[WebSocket] ブラウザ接続: {len(browser_clients)}台")
@@ -39,13 +39,17 @@ async def browser_handler(websocket):
                 data = json.loads(message)
                 logging.debug(f"[ブラウザ] 受信: {data}")
                 
+                # ブラウザからの直接制御
                 if data.get("action") == "speak_text":
                     await handle_speech_request(data.get("text", ""))
-                elif data.get("action") == "change_expression":
+                elif data.get("action") in ["change_expression", "change_pose", "change_outfit"]:
                     await broadcast_to_browser(data)
-                elif data.get("action") == "change_pose":
+                # 外部制御スクリプトからのコマンド
+                elif data.get("action") == "speak":
+                    await handle_speech_request(data.get("text", ""))
+                elif data.get("action") in ["change_expression", "change_pose", "change_outfit", "blink"]:
                     await broadcast_to_browser(data)
-                elif data.get("action") == "change_outfit":
+                else:
                     await broadcast_to_browser(data)
                     
             except json.JSONDecodeError as e:
@@ -58,33 +62,34 @@ async def browser_handler(websocket):
     finally:
         browser_clients.discard(websocket)
 
-async def control_handler(websocket):
-    """外部制御用WebSocketハンドラー"""
-    global control_clients
-    control_clients.add(websocket)
-    logging.info(f"[WebSocket] 制御クライアント接続: {len(control_clients)}台")
+async def obs_control_handler(websocket):
+    """OBS制御用WebSocketハンドラー（統合タイムラインシステム用）"""
+    global obs_control_clients
+    obs_control_clients.add(websocket)
+    logging.info(f"[WebSocket] OBS制御システム接続: {len(obs_control_clients)}台")
     
     try:
         async for message in websocket:
             try:
+                logging.info(f"[OBS制御] 生メッセージ受信: {message}")
                 data = json.loads(message)
-                logging.debug(f"[制御] 受信: {data}")
+                logging.info(f"[OBS制御] 受信: {data}")
                 
-                await process_control_command(data)
+                await process_obs_control_command(data)
                 
             except json.JSONDecodeError as e:
-                logging.error(f"[制御] JSONデコードエラー: {e}")
+                logging.error(f"[OBS制御] JSONデコードエラー: {e}")
             except Exception as e:
-                logging.error(f"[制御] メッセージ処理エラー: {e}")
+                logging.error(f"[OBS制御] メッセージ処理エラー: {e}")
                 
     except websockets.exceptions.ConnectionClosed:
-        logging.info("[WebSocket] 制御クライアント切断")
+        logging.info("[WebSocket] OBS制御システム切断")
     finally:
-        control_clients.discard(websocket)
+        obs_control_clients.discard(websocket)
 
 async def broadcast_to_browser(data: dict):
     """ブラウザクライアントに一斉送信"""
-    global browser_clients  # ✅ global宣言追加
+    global browser_clients
     if browser_clients:
         message = json.dumps(data, ensure_ascii=False)
         dead_clients = set()
@@ -101,48 +106,53 @@ async def broadcast_to_browser(data: dict):
         # 切断クライアント削除
         browser_clients -= dead_clients
 
-async def broadcast_to_control(data: dict):
-    """制御クライアントに一斉送信"""
-    global control_clients  # ✅ global宣言追加
-    if control_clients:
+async def broadcast_to_obs_control(data: dict):
+    """OBS制御クライアントに一斉送信"""
+    global obs_control_clients
+    if obs_control_clients:
         message = json.dumps(data, ensure_ascii=False)
         dead_clients = set()
         
-        for client in control_clients:
+        for client in obs_control_clients:
             try:
                 await client.send(message)
             except websockets.exceptions.ConnectionClosed:
                 dead_clients.add(client)
             except Exception as e:
-                logging.error(f"[制御送信エラー] {e}")
+                logging.error(f"[OBS制御送信エラー] {e}")
                 dead_clients.add(client)
         
         # 切断クライアント削除
-        control_clients -= dead_clients
+        obs_control_clients -= dead_clients
 
-# 以下、既存の関数をそのまま続ける...
-async def process_control_command(data):
-    """制御コマンド処理"""
+async def process_obs_control_command(data):
+    """OBS制御コマンド処理"""
     action = data.get("action")
     
-    if action == "speak":
-        await handle_speech_request(data.get("text", ""))
-    elif action == "change_expression":
-        await broadcast_to_browser(data)
-    elif action == "change_pose":
-        await broadcast_to_browser(data)
-    elif action == "change_outfit":
-        await broadcast_to_browser(data)
-    elif action == "blink":
-        await broadcast_to_browser(data)
-    elif action == "comment_interrupt":
-        await handle_comment_interrupt(data)
+    if action == "scene_change":
+        # OBSシーン変更コマンド
+        scene_name = data.get("scene_name")
+        logging.info(f"[OBS] シーン切り替え要求: {scene_name}")
+        if obs_controller:
+            await obs_controller.change_scene(scene_name)
+    elif action == "start_zundamon_session":
+        # ずんだもんセッション開始
+        logging.info("[OBS] ずんだもんセッション開始")
+        await broadcast_to_browser({"action": "session_start"})
+    elif action == "end_zundamon_session":
+        # ずんだもんセッション終了
+        logging.info("[OBS] ずんだもんセッション終了")
+        await broadcast_to_browser({"action": "session_end"})
+    elif action == "zundamon_control":
+        # ずんだもん制御コマンドをブラウザに転送
+        control_data = data.get("control_data", {})
+        await broadcast_to_browser(control_data)
     else:
-        await broadcast_to_browser(data)
+        logging.warning(f"[OBS制御] 未知のコマンド: {action}")
 
 async def handle_speech_request(text: str):
     """音声合成要求処理"""
-    global voicevox, audio_analyzer, plugin_manager, volume_queue  # ✅ global宣言追加
+    global voicevox, audio_analyzer, plugin_manager, volume_queue
     
     logging.info(f"[音声合成] テキスト: {text}")
     
@@ -187,7 +197,7 @@ async def handle_speech_request(text: str):
 
 async def handle_comment_interrupt(data):
     """コメント割り込み処理"""
-    global plugin_manager  # ✅ global宣言追加
+    global plugin_manager
     
     logging.info(f"[コメント] 割り込み: {data}")
     
@@ -207,11 +217,9 @@ async def handle_comment_interrupt(data):
     except Exception as e:
         logging.error(f"コメント処理エラー: {e}")
 
-# 以下の関数も同様に global 宣言を追加して続ける...
-
 async def volume_queue_processor():
     """音量キュー処理"""
-    global volume_queue, plugin_manager  # ✅ global宣言追加
+    global volume_queue, plugin_manager
     
     while True:
         try:
@@ -260,19 +268,19 @@ async def start_websocket_servers(config):
     )
     logging.info(f"✅ ブラウザ用WebSocket: ws://localhost:{browser_port}")
     
-    control_port = config["servers"]["websocket_control_port"]
-    control_server = await websockets.serve(
-        control_handler, 
+    obs_control_port = config["servers"]["websocket_control_port"]
+    obs_control_server = await websockets.serve(
+        obs_control_handler, 
         "localhost", 
-        control_port
+        obs_control_port
     )
-    logging.info(f"✅ 制御用WebSocket: ws://localhost:{control_port}")
+    logging.info(f"✅ OBS制御用WebSocket: ws://localhost:{obs_control_port}")
     
-    return browser_server, control_server
+    return browser_server, obs_control_server
 
 async def initialize_system(config):
     """システム初期化"""
-    global voicevox, audio_analyzer, obs_controller, plugin_manager  # ✅ global宣言追加
+    global voicevox, audio_analyzer, obs_controller, plugin_manager
     
     voicevox = VoicevoxClient(config)
     if await voicevox.check_connection():
@@ -324,29 +332,26 @@ def setup_logging(config):
     if log_file:
         Path(log_file).parent.mkdir(parents=True, exist_ok=True)
     
-    # ハンドラー設定でエンコーディングを指定
     handlers = [
-        logging.StreamHandler(sys.stdout)  # コンソール出力も明示的に指定
+        logging.StreamHandler(sys.stdout)
     ]
     
     if log_file:
-        # ファイル出力でUTF-8エンコーディングを指定
         handlers.append(logging.FileHandler(log_file, encoding='utf-8'))
     
     logging.basicConfig(
         level=getattr(logging, log_level),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=handlers,
-        force=True  # 既存設定を強制リセット
+        force=True
     )
     
-    # コンソール出力のエンコーディング確認
     if hasattr(sys.stdout, 'reconfigure'):
         try:
             sys.stdout.reconfigure(encoding='utf-8')
             sys.stderr.reconfigure(encoding='utf-8')
         except:
-            pass  # 古いPythonバージョンでは無視
+            pass
 
 if __name__ == "__main__":
     config_manager = ConfigManager()

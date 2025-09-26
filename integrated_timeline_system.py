@@ -20,8 +20,7 @@ class IntegratedTimelineSystem:
         """設定読み込み"""
         return {
             "zundamon_system": {
-                "executable": "python zundamon_system.py",
-                "websocket_port": 8769,
+                "websocket_port": 8767,
                 "startup_timeout": 10,
                 "ping_interval": 5
             },
@@ -103,8 +102,14 @@ class IntegratedTimelineSystem:
     
     async def launch_zundamon_system(self):
         """ずんだもんシステム起動"""
+        import sys
+        
+        # 現在のPython実行ファイルのパスを取得（仮想環境対応）
+        python_executable = sys.executable
+        
         cmd = [
-            "python", "zundamon_system.py",
+            python_executable,  # "python" ではなく実際のパス
+            "zundamon_system.py",
             "--websocket-port", str(self.config["zundamon_system"]["websocket_port"]),
             "--parent-pid", str(os.getpid())
         ]
@@ -112,6 +117,7 @@ class IntegratedTimelineSystem:
         try:
             self.zundamon_process = subprocess.Popen(cmd)
             print(f"[統合] ずんだもんプロセス起動: PID={self.zundamon_process.pid}")
+            print(f"[統合] Python実行ファイル: {python_executable}")
             
             # 起動待機
             await asyncio.sleep(2)
@@ -139,7 +145,7 @@ class IntegratedTimelineSystem:
         except Exception as e:
             print(f"[統合] WebSocket通信エラー: {e}")
     
-    async def handle_zundamon_connection(self, websocket, path):
+    async def handle_zundamon_connection(self, websocket):
         """ずんだもんシステムからの接続処理"""
         print("[統合] ずんだもんシステム接続")
         self.zundamon_ws = websocket
