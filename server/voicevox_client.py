@@ -119,3 +119,57 @@ class VoicevoxClient:
                     self.logger.debug(f"古い音声ファイル削除: {file_path}")
         except Exception as e:
             self.logger.error(f"ファイル削除エラー: {e}")
+
+    def start_voicevox(self):
+        """VOICEVOXを自動起動"""
+        try:
+            import subprocess
+            import platform
+            import os
+            
+            if platform.system() == "Windows":
+                # Windows版VOICEVOX起動パス
+                voicevox_paths = [
+                    "C:/utility/VOICEVOX/VOICEVOX.exe",  # ← あなたの環境
+                    "C:/Program Files/VOICEVOX/VOICEVOX.exe",
+                    "C:/Users/%USERNAME%/AppData/Local/Programs/VOICEVOX/VOICEVOX.exe",
+                    "voicevox.exe"  # PATH環境変数から
+                ]
+                
+                for path in voicevox_paths:
+                    try:
+                        if path.endswith('.exe') and os.path.exists(path):
+                            self.logger.info(f"VOICEVOX起動中: {path}")
+                            subprocess.Popen([path], shell=False)
+                            return True
+                    except Exception as e:
+                        self.logger.debug(f"VOICEVOX起動試行失敗 {path}: {e}")
+                        continue
+            
+            self.logger.warning("VOICEVOX実行ファイルが見つかりません")
+            return False
+        except Exception as e:
+            self.logger.error(f"VOICEVOX起動エラー: {e}")
+            return False
+
+    async def ensure_voicevox_ready(self, max_retries=3, retry_delay=5):
+        """VOICEVOX準備完了まで待機"""
+        for attempt in range(max_retries):
+            if await self.check_connection():
+                self.logger.info("VOICEVOX接続成功")
+                return True
+            
+            if attempt == 0:
+                self.logger.info("VOICEVOX接続失敗。自動起動を試行...")
+                if self.start_voicevox():
+                    self.logger.info("VOICEVOX起動中...10秒待機")
+                    await asyncio.sleep(10)  # 起動待機
+                else:
+                    self.logger.error("VOICEVOX自動起動失敗")
+                    return False
+            else:
+                self.logger.info(f"VOICEVOX接続リトライ {attempt + 1}/{max_retries}")
+                await asyncio.sleep(retry_delay)
+        
+        self.logger.error("VOICEVOX準備完了に失敗しました")
+        return False

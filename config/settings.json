@@ -38,5 +38,32 @@
   "logging": {
     "level": "INFO",
     "file": "./logs/system.log"
+  },
+  "automation": {
+    "mode": "auto",
+    "auto_start_components": ["server", "gui"],
+    "auto_project": "default_project",
+    "startup_delay": 2,
+    "auto_timeline_start": true,
+    "auto_obs_connect": true,
+    "auto_voicevox_check": true,
+    "stabilization_wait": 30
+  },
+  "obs": {
+    "executable_path": "C:/utility/OBS/bin/64bit/obs64.exe",
+    "startup_wait": 15,
+    "retry_attempts": 3,
+    "retry_delay": 5
+  },
+  "voicevox": {
+    "executable_path": "C:/utility/VOICEVOX/VOICEVOX.exe",
+    "startup_wait": 10,
+    "retry_attempts": 3,
+    "retry_delay": 5
+  },
+  "niconico": {
+    "auto_broadcast": true,
+    "chrome_debug_port": 9222,
+    "broadcast_url": "https://live.nicovideo.jp/create"
   }
 }

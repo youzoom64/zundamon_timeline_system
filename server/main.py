@@ -27,6 +27,13 @@ obs_controller = None
 plugin_manager = None
 volume_queue = queue.Queue()
 
+# 非同期読み上げシステム用グローバル変数
+comment_queue = []  # コメントキュー（文字列）
+prepared_audio = None  # 準備済み音声ファイルパス
+current_speech_task = None  # 現在の音声再生タスク
+is_speaking = False  # 音声再生中フラグ
+speech_lock = asyncio.Lock()  # 音声制御ロック
+
 async def browser_handler(websocket):
     """ブラウザ用WebSocketハンドラー（admin.html、index.html、外部制御スクリプト用）"""
     global browser_clients
@@ -150,77 +157,174 @@ async def process_obs_control_command(data):
     else:
         logging.warning(f"[OBS制御] 未知のコマンド: {action}")
 
-async def handle_speech_request(text: str):
+async def handle_speech_request(text: str, is_comment=False, use_prepared=False):
     """音声合成要求処理"""
     global voicevox, audio_analyzer, plugin_manager, volume_queue
-    
-    logging.info(f"[音声合成] テキスト: {text}")
-    
-    try:
-        if plugin_manager:
-            await plugin_manager.execute_hook('on_speech_start', text)
-        
-        audio_file = await voicevox.synthesize_speech(text)
-        
-        if audio_file:
-            await broadcast_to_browser({
-                "action": "speech_start",
-                "text": text
-            })
-            
-            if audio_analyzer:
-                player = audio_analyzer.create_player()
-                
-                def play_audio():
-                    try:
-                        player.play_with_analysis(audio_file)
-                        volume_queue.put("END")
-                    except Exception as e:
-                        logging.error(f"音声再生エラー: {e}")
-                        volume_queue.put("END")
-                
-                audio_thread = threading.Thread(target=play_audio, daemon=True)
-                audio_thread.start()
-        else:
-            logging.error("音声合成失敗")
+    global current_speech_task, is_speaking, speech_lock, prepared_audio
+
+    async with speech_lock:
+        logging.info(f"[音声合成] テキスト: {text}, コメント: {is_comment}, 準備済み使用: {use_prepared}")
+
+        # コメントの場合、既存の音声を停止
+        if is_comment and is_speaking and current_speech_task:
+            logging.info("[音声制御] コメント割り込み - 既存音声停止")
+            current_speech_task.cancel()
+            await broadcast_to_browser({"action": "speech_interrupted"})
+
+        try:
+            if plugin_manager:
+                await plugin_manager.execute_hook('on_speech_start', text)
+
+            # 準備済み音声を使用するか、新規生成するか
+            if use_prepared and prepared_audio:
+                audio_file = prepared_audio
+                logging.info(f"[音声合成] 準備済み音声使用: {audio_file}")
+            else:
+                audio_file = await voicevox.synthesize_speech(text)
+                logging.info(f"[音声合成] 新規生成: {audio_file}")
+
+            if audio_file:
+                is_speaking = True
+                await broadcast_to_browser({
+                    "action": "speech_start",
+                    "text": text
+                })
+
+                if audio_analyzer:
+                    current_speech_task = asyncio.create_task(
+                        play_audio_async(audio_file, text, is_comment)
+                    )
+                    await current_speech_task
+            else:
+                logging.error("音声合成失敗")
+                await broadcast_to_browser({
+                    "action": "speech_error",
+                    "text": text
+                })
+
+        except asyncio.CancelledError:
+            logging.info("[音声制御] 音声タスクがキャンセルされました")
+            is_speaking = False
+        except Exception as e:
+            logging.error(f"音声合成処理エラー: {e}")
             await broadcast_to_browser({
                 "action": "speech_error",
-                "text": text
+                "error": str(e)
             })
-            
-    except Exception as e:
-        logging.error(f"音声合成処理エラー: {e}")
-        await broadcast_to_browser({
-            "action": "speech_error", 
-            "error": str(e)
-        })
+            is_speaking = False
+
+async def play_audio_async(audio_file: str, text: str, is_comment: bool):
+    """非同期音声再生"""
+    global audio_analyzer, volume_queue, is_speaking
+
+    try:
+        player = audio_analyzer.create_player()
+
+        def play_audio():
+            try:
+                player.play_with_analysis(audio_file)
+                volume_queue.put("END")
+            except Exception as e:
+                logging.error(f"音声再生エラー: {e}")
+                volume_queue.put("END")
+
+        audio_thread = threading.Thread(target=play_audio, daemon=True)
+        audio_thread.start()
+
+        # スレッド完了まで待機
+        audio_thread.join()
+
+        logging.info(f"[音声再生] 完了: {text[:20]}...")
+
+        # コメント応答完了時に次のキューを処理
+        if is_comment:
+            await process_next_comment_queue()
+
+    finally:
+        is_speaking = False
 
 async def handle_comment_interrupt(data):
     """コメント割り込み処理"""
-    global plugin_manager
-    
+    global plugin_manager, comment_queue, prepared_audio, is_speaking
+
     logging.info(f"[コメント] 割り込み: {data}")
-    
+
     try:
         if plugin_manager:
             await plugin_manager.execute_hook('on_comment_received', data)
-        
+
         username = data.get("username", "名無しさん")
         comment_text = data.get("text", "")
-        response = f"{username}さん、コメントありがとうございます！"
-        
-        await handle_speech_request(response)
-        
+        response_text = f"{username}さん、コメントありがとうございます！"
+
+        if is_speaking:
+            # 応答中の場合はキューに追加
+            comment_queue.append(response_text)
+            logging.info(f"[コメントキュー] 追加 ({len(comment_queue)}件): {response_text[:20]}...")
+
+            # キューの先頭（新規追加）の場合は即座にAPI準備
+            if len(comment_queue) == 1:
+                await prepare_next_audio()
+        else:
+            # 音声停止中の場合は即座に応答開始
+            await handle_speech_request(response_text, is_comment=True)
+
         if plugin_manager:
-            await plugin_manager.execute_hook('on_comment_response', response)
-            
+            await plugin_manager.execute_hook('on_comment_response', response_text)
+
     except Exception as e:
         logging.error(f"コメント処理エラー: {e}")
+
+async def prepare_next_audio():
+    """次の音声を事前準備"""
+    global comment_queue, prepared_audio, voicevox
+
+    if comment_queue and not prepared_audio:
+        next_text = comment_queue[0]
+        logging.info(f"[音声準備] 開始: {next_text[:20]}...")
+
+        try:
+            prepared_audio = await voicevox.synthesize_speech(next_text)
+            logging.info(f"[音声準備] 完了: {prepared_audio}")
+        except Exception as e:
+            logging.error(f"[音声準備] エラー: {e}")
+
+async def process_next_comment_queue():
+    """次のコメントキューを処理"""
+    global comment_queue, prepared_audio, speech_lock
+
+    async with speech_lock:
+        if comment_queue:
+            # 完了したコメントをキューから削除
+            completed_text = comment_queue.pop(0)
+            logging.info(f"[コメントキュー] 完了: {completed_text[:20]}...")
+
+            # 準備済み音声をクリア
+            prepared_audio = None
+
+            # 次のコメントがある場合
+            if comment_queue:
+                next_text = comment_queue[0]
+
+                # 準備済み音声があるかチェック
+                has_prepared = prepared_audio is not None
+
+                if has_prepared:
+                    logging.info(f"[コメントキュー] 準備済み音声で即座再生: {next_text[:20]}...")
+                    await handle_speech_request(next_text, is_comment=True, use_prepared=True)
+                else:
+                    # 準備済み音声がない場合は新規生成
+                    logging.info(f"[コメントキュー] 新規生成で再生: {next_text[:20]}...")
+                    await handle_speech_request(next_text, is_comment=True, use_prepared=False)
+
+                # さらに次があれば準備開始
+                if len(comment_queue) > 1:
+                    await prepare_next_audio()
 
 async def volume_queue_processor():
     """音量キュー処理"""
     global volume_queue, plugin_manager
-    
+
     while True:
         try:
             volume_level = volume_queue.get_nowait()
@@ -230,7 +334,7 @@ async def volume_queue_processor():
                     await plugin_manager.execute_hook('on_speech_end')
             elif isinstance(volume_level, (int, float)):
                 await broadcast_to_browser({
-                    "action": "volume_level", 
+                    "action": "volume_level",
                     "level": volume_level
                 })
         except queue.Empty:
@@ -345,6 +449,16 @@ def setup_logging(config):
         handlers=handlers,
         force=True
     )
+    
+    # 外部ライブラリのログレベルを制限
+    logging.getLogger('websockets').setLevel(logging.WARNING)
+    logging.getLogger('obswebsocket').setLevel(logging.WARNING)
+    logging.getLogger('aiohttp').setLevel(logging.WARNING)
+    logging.getLogger('asyncio').setLevel(logging.WARNING)
+    
+    # HTTPサーバーのアクセスログを制限
+    if log_level != "DEBUG":
+        logging.getLogger('server.main').setLevel(logging.WARNING)  # HTTPアクセスログを抑制
     
     if hasattr(sys.stdout, 'reconfigure'):
         try:

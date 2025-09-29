@@ -189,8 +189,12 @@ class MainWindow:
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
         log_message = f"[{timestamp}] {message}\n"
         
-        self.log_text.insert(tk.END, log_message)
-        self.log_text.see(tk.END)
+        # log_textが初期化されていない場合はprintで出力
+        if hasattr(self, 'log_text') and self.log_text:
+            self.log_text.insert(tk.END, log_message)
+            self.log_text.see(tk.END)
+        else:
+            print(f"[GUI Log] {message}")
     
     def clear_log(self):
         """ログクリア"""
