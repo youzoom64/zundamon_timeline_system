@@ -23,7 +23,24 @@
       "default_expression": "normal",
       "default_outfit": "usual",
       "default_pose": "basic",
-      "default_position": "center"
+      "default_position": "center",
+      "mouth": {
+        "closed": "muhu",
+        "half_open": "hoa",
+        "open": "hoaa"
+      }
+    },
+    "metan": {
+      "voice_id": 2,
+      "default_expression": "normal",
+      "default_outfit": "usual",
+      "default_pose": "basic",
+      "default_position": "left",
+      "mouth": {
+        "closed": "smile",
+        "half_open": "o",
+        "open": "waaa"
+      }
     }
   },
   "timeline": {

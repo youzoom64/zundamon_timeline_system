@@ -250,17 +250,15 @@ async def play_audio_async(audio_file: str, text: str, is_comment: bool, charact
         current_audio_thread = player.play_async(audio_file)
 
         # 再生完了まで待機（割り込み可能）
+        # スレッドが生きている間は待つ
         while current_audio_thread and current_audio_thread.is_alive():
-            if current_audio_player and not current_audio_player.is_playing:
-                break
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
 
-        # 音声スレッド終了を確実に待つ
-        if current_audio_thread:
-            current_audio_thread.join(timeout=1.0)
+        # コールバックを無効化
+        player.volume_callback = None
 
-        # 音声終了処理（音量データが全て送信された後）
-        await asyncio.sleep(0.2)  # 音量キュー処理を待つ
+        # 音声終了処理
+        await asyncio.sleep(0.1)  # 最後のvolume_levelが処理されるのを待つ
         volume_queue.put({"character": character, "level": "END"})
         logging.info(f"[音声再生] 完了: {text[:20]}... (キャラ: {character})")
 
@@ -406,10 +404,21 @@ async def volume_queue_processor():
             logging.error(f"音量キュー処理エラー: {e}")
 
 async def idle_animation_loop():
-    """アイドルアニメーション"""
-    while True:
-        await asyncio.sleep(5)
-        await broadcast_to_browser({"action": "blink"})
+    """全キャラクター独立まばたき"""
+    import random
+
+    characters = ["zundamon", "metan"]  # キャラクター追加はここに名前を追加するだけ
+
+    async def blink_loop(character, offset):
+        """個別キャラクターのまばたきループ"""
+        await asyncio.sleep(offset)  # 起動時にずらす
+        while True:
+            await asyncio.sleep(random.uniform(4, 6))  # 4-6秒ランダム
+            await broadcast_to_browser({"action": "blink", "character": character})
+
+    # 各キャラクター用タスクを並列実行
+    tasks = [blink_loop(char, i * 2) for i, char in enumerate(characters)]
+    await asyncio.gather(*tasks)
 
 class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):

@@ -52,6 +52,7 @@ let metanSprites = {};
 let zundamonTextures = {};
 let metanTextures = {};
 let presets = {};
+let config = {}; // システム設定
 let activeCharacter = "zundamon"; // 現在話しているキャラクター
 
 let zundamonState = {
@@ -81,6 +82,20 @@ const characters = {
     position: { x: 550, y: 80 } // 左側（右寄り・少し下）
   }
 };
+
+// 設定読み込み
+async function loadConfig() {
+  try {
+    const response = await fetch('/config/settings.json');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    config = await response.json();
+    console.log("✅ 設定読み込み完了:", config);
+  } catch (error) {
+    console.error("❌ 設定読み込みエラー:", error);
+  }
+}
 
 // プリセット読み込み
 async function loadPresets() {
@@ -141,6 +156,7 @@ function handleServerMessage(data) {
 
     case "volume_level":
       const volumeCharacter = data.character || activeCharacter;
+      console.log(`[口パク] ${volumeCharacter}: ${data.level}`);
       if (volumeCharacter === "zundamon") {
         updateZundamonMouth(data.level);
       } else if (volumeCharacter === "metan") {
@@ -286,12 +302,12 @@ function startBlinkAnimation(character) {
       zundamonSprites.eyeBlack.visible = originalEyeBlack;
     }, 150);
   } else if (character === "metan") {
-    if (!metanSprites.eyeWhite || !metanSprites.eyeBlack || !metanTextures["peaceful_eye"]) return;
+    if (!metanSprites.eyeWhite || !metanSprites.eyeBlack || !metanTextures["peaceful_eye2"]) return;
 
     const originalEyeWhite = metanSprites.eyeWhite.texture;
     const originalEyeBlack = metanSprites.eyeBlack.visible;
 
-    metanSprites.eyeWhite.texture = metanTextures["peaceful_eye"].texture;
+    metanSprites.eyeWhite.texture = metanTextures["peaceful_eye2"].texture;
     metanSprites.eyeBlack.visible = false;
 
     setTimeout(() => {
@@ -338,52 +354,31 @@ function getAssetConfig(character, basePath) {
   if (character === "metan") {
     // 四国めたんのアセット設定
     return {
-      "body": `${basePath}/outfit2/body.png`,
-      "swimsuit": `${basePath}/outfit2/swimsuit.png`,
-      "bunny_costume": `${basePath}/outfit2/bunny_costume.png`,
-      "towel": `${basePath}/outfit2/towel.png`,
-      "usual_clothes": `${basePath}/outfit1/uniform.png`,
+      "uniform": `${basePath}/outfit1/uniform.png`,
       "basic_right": `${basePath}/outfit1/right_arm/normal.png`,
       "basic_left": `${basePath}/outfit1/left_arm/normal.png`,
-      "point_right": `${basePath}/outfit1/right_arm/point.png`,
-      "whisper_left": `${basePath}/outfit1/left_arm/whisper.png`,
-      "hold_left": `${basePath}/outfit1/left_arm/hold.png`,
-      "finger_to_mouth_left": `${basePath}/outfit1/left_arm/finger_to_mouth.png`,
-      "mic_left": `${basePath}/outfit1/left_arm/mic.png`,
-      "manju_right": `${basePath}/outfit1/right_arm/manju.png`,
-      "hold_out_hand_right": `${basePath}/outfit1/right_arm/hold_out_hand.png`,
+      "twin_drill_left": `${basePath}/twin_drill_left.png`,
+      "twin_drill_right": `${basePath}/twin_drill_right.png`,
+      "front_hair_sideburns": `${basePath}/front_hair_sideburns.png`,
       "normal_white_eye": `${basePath}/eye/eye_set/normal_white_eye.png`,
-      "wide_white_eye": `${basePath}/eye/eye_set/wide_white_eye.png`,
       "normal_eye": `${basePath}/eye/eye_set/pupil/normal_eye.png`,
-      "normal_eye2": `${basePath}/eye/eye_set/pupil/normal_eye2.png`,
-      "look_away": `${basePath}/eye/eye_set/pupil/look_away.png`,
-      "look_away2": `${basePath}/eye/eye_set/pupil/look_away2.png`,
-      "camera_gaze": `${basePath}/eye/eye_set/pupil/camera_gaze.png`,
-      "camera_gaze2": `${basePath}/eye/eye_set/pupil/camera_gaze2.png`,
       "peaceful_eye": `${basePath}/eye/peaceful_eye.png`,
       "peaceful_eye2": `${basePath}/eye/peaceful_eye2.png`,
-      "dizzy_eye": `${basePath}/eye/dizzy_eye.png`,
-      "upward_eye": `${basePath}/eye/upward_eye.png`,
-      "upward_eye2": `${basePath}/eye/upward_eye2.png`,
       "normal_eyebrow": `${basePath}/eyebrow/thick_happy_eyebrow.png`,
-      "angry_eyebrow": `${basePath}/eyebrow/angry_eyebrow.png`,
-      "happy_eyebrow": `${basePath}/eyebrow/happy_eyebrow.png`,
-      "troubled_eyebrow": `${basePath}/eyebrow/troubled_eyebrow.png`,
-      "slight_angry_eyebrow": `${basePath}/eyebrow/slight_angry_eyebrow.png`,
-      "thick_angry_eyebrow": `${basePath}/eyebrow/thick_angry_eyebrow.png`,
-      "thick_troubled_eyebrow": `${basePath}/eyebrow/thick_troubled_eyebrow.png`,
+      // 口パーツ（全種類）
       "smile": `${basePath}/mouth/smile.png`,
-      "mu": `${basePath}/mouth/mu.png`,
-      "hoa": `${basePath}/mouth/hoa.png`,
-      "o": `${basePath}/mouth/o.png`,
-      "hee": `${basePath}/mouth/hee.png`,
-      "yu": `${basePath}/mouth/yu.png`,
-      "nn": `${basePath}/mouth/nn.png`,
       "grin": `${basePath}/mouth/grin.png`,
-      "tongue_out": `${basePath}/mouth/tongue_out.png`,
+      "mu": `${basePath}/mouth/mu.png`,
+      "o": `${basePath}/mouth/o.png`,
+      "waaa": `${basePath}/mouth/waaa.png`,
+      "hee": `${basePath}/mouth/hee.png`,
       "momu": `${basePath}/mouth/momu.png`,
+      "nn": `${basePath}/mouth/nn.png`,
+      "tongue_out": `${basePath}/mouth/tongue_out.png`,
+      "triangle_down": `${basePath}/mouth/triangle_down.png`,
       "triangle_up": `${basePath}/mouth/triangle_up.png`,
-      "triangle_down": `${basePath}/mouth/triangle_down.png`
+      "ueh": `${basePath}/mouth/ueh.png`,
+      "yu": `${basePath}/mouth/yu.png`
     };
   } else {
     // ずんだもんのアセット設定（既存）
@@ -412,6 +407,8 @@ function getAssetConfig(character, basePath) {
       "troubled_eyebrow2": `${basePath}/eyebrow/troubled_eyebrow2.png`,
       "muhu": `${basePath}/mouth/muhu.png`,
       "hoa": `${basePath}/mouth/hoa.png`,
+      "hoaa": `${basePath}/mouth/hoaa.png`,
+      "o": `${basePath}/mouth/o.png`,
       "triangle": `${basePath}/mouth/triangle.png`,
       "nn": `${basePath}/mouth/nn.png`,
       "nnaa": `${basePath}/mouth/nnaa.png`
@@ -502,16 +499,17 @@ function createMetan() {
     delete metanSprites[key];
   }
 
-  // 四国めたん専用パーツ
-  addMetanSprite("body", "body");
-  addMetanSprite("swimsuit", "swimsuit");
-  addMetanSprite("clothes", "usual_clothes");
+  // 四国めたん専用パーツ（描画順：後ろから前へ）
+  addMetanSprite("twin_drill_right", "twin_drill_right");  // 最背面
+  addMetanSprite("twin_drill_left", "twin_drill_left");
+  addMetanSprite("uniform", "uniform");
   addMetanSprite("right_arm", "basic_right");
   addMetanSprite("left_arm", "basic_left");
   addMetanSprite("eyeWhite", "normal_white_eye");
   addMetanSprite("eyeBlack", "normal_eye");
   addMetanSprite("eyebrow", "normal_eyebrow");
   addMetanSprite("mouth", "smile");
+  addMetanSprite("front_hair_sideburns", "front_hair_sideburns");
 
   console.log("✅ 四国めたん描画完了");
 }
@@ -547,43 +545,83 @@ function updateMouthByVolume(volume) {
 }
 
 function updateZundamonMouth(volume) {
-  if (volume > 0.4 && zundamonTextures["hoa"]) {
-    zundamonSprites.mouth.texture = zundamonTextures["hoa"].texture;
-  } else if (volume > 0.1 && zundamonTextures["muhu"]) {
-    zundamonSprites.mouth.texture = zundamonTextures["muhu"].texture;
-  } else if (zundamonTextures["muhu"]) {
-    zundamonSprites.mouth.texture = zundamonTextures["muhu"].texture;
+  if (!zundamonSprites.mouth) {
+    console.error("[ずんだもん] mouthスプライトが存在しません");
+    return;
+  }
+
+  const mouthConfig = config.characters?.zundamon?.mouth || {
+    closed: "muhu",
+    half_open: "muhu",
+    open: "hoa"
+  };
+
+  if (volume > 0.22 && zundamonTextures[mouthConfig.open]) {
+    zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.open].texture;
+  } else if (volume > 0.15 && zundamonTextures[mouthConfig.half_open]) {
+    zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.half_open].texture;
+  } else if (zundamonTextures[mouthConfig.closed]) {
+    zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.closed].texture;
   }
 }
 
 function updateMetanMouth(volume) {
-  if (volume > 0.4 && metanTextures["hoa"]) {
-    metanSprites.mouth.texture = metanTextures["hoa"].texture;
-  } else if (volume > 0.1 && metanTextures["muhu"]) {
-    metanSprites.mouth.texture = metanTextures["muhu"].texture;
-  } else if (metanTextures["muhu"]) {
-    metanSprites.mouth.texture = metanTextures["muhu"].texture;
+  if (!metanSprites.mouth) {
+    console.error("[めたん] mouthスプライトが存在しません");
+    return;
+  }
+
+  const mouthConfig = config.characters?.metan?.mouth || {
+    closed: "smile",
+    half_open: "o",
+    open: "waaa"
+  };
+
+  let targetTexture = null;
+  let debugMsg = "";
+
+  if (volume > 0.22 && metanTextures[mouthConfig.open]) {
+    targetTexture = mouthConfig.open;
+    debugMsg = "大開き";
+  } else if (volume > 0.15 && metanTextures[mouthConfig.half_open]) {
+    targetTexture = mouthConfig.half_open;
+    debugMsg = "半開き";
+  } else if (metanTextures[mouthConfig.closed]) {
+    targetTexture = mouthConfig.closed;
+    debugMsg = "閉じ";
+  }
+
+  if (targetTexture && metanTextures[targetTexture]) {
+    const newTexture = metanTextures[targetTexture].texture;
+    if (metanSprites.mouth.texture !== newTexture) {
+      metanSprites.mouth.texture = newTexture;
+      console.log(`[めたん] ${debugMsg}: ${targetTexture} (vol=${volume.toFixed(3)})`);
+      app.renderer.render(app.stage); // 強制レンダリング
+    }
   }
 }
 
 // キャラクターハイライト機能
 function highlightActiveCharacter(character) {
-  // 全キャラクターを通常の明度に
-  if (zundamonContainer) zundamonContainer.alpha = 0.6;
-  if (metanContainer) metanContainer.alpha = 0.6;
+  // 全キャラクターを暗くする（透過なし）
+  const darkenFilter = new PIXI.ColorMatrixFilter();
+  darkenFilter.brightness(0.5, false);
 
-  // アクティブキャラクターをハイライト
+  if (zundamonContainer) zundamonContainer.filters = [darkenFilter];
+  if (metanContainer) metanContainer.filters = [darkenFilter];
+
+  // アクティブキャラクターは通常の明るさ
   if (character === "zundamon" && zundamonContainer) {
-    zundamonContainer.alpha = 1.0;
+    zundamonContainer.filters = [];
   } else if (character === "metan" && metanContainer) {
-    metanContainer.alpha = 1.0;
+    metanContainer.filters = [];
   }
 }
 
 function resetCharacterHighlight() {
-  // 全キャラクターを通常の明度に戻す
-  if (zundamonContainer) zundamonContainer.alpha = 1.0;
-  if (metanContainer) metanContainer.alpha = 1.0;
+  // 全キャラクターを通常の明るさに戻す
+  if (zundamonContainer) zundamonContainer.filters = [];
+  if (metanContainer) metanContainer.filters = [];
 }
 
 // 旧関数（互換性のため残す）
@@ -633,13 +671,16 @@ function updateDebugStatus(elementId, text, isGood) {
 // 初期化
 async function init() {
   console.log("🚀 ずんだもんシステム初期化");
-  
+
+  // 設定読み込み
+  await loadConfig();
+
   // プリセット読み込み
   await loadPresets();
-  
+
   // WebSocket接続
   connectWebSocket();
-  
+
   // アセット読み込み
   loadAssets();
 }
@@ -651,61 +692,17 @@ let metanSpeechInterval = null;
 function startSpeechAnimation(character, text) {
   console.log(`口パクアニメーション開始[${character}]:`, text);
 
-  if (character === "zundamon") {
-    if (zundamonSpeechInterval) {
-      clearInterval(zundamonSpeechInterval);
-    }
-
-    if (!zundamonSprites.mouth) return;
-
-    const estimatedDuration = text.length * 150;
-    let elapsed = 0;
-
-    zundamonSpeechInterval = setInterval(() => {
-      if (elapsed >= estimatedDuration) {
-        resetMouth("zundamon");
-        clearInterval(zundamonSpeechInterval);
-        zundamonSpeechInterval = null;
-        return;
-      }
-
-      const shouldOpen = Math.random() > 0.5;
-      if (shouldOpen && zundamonTextures["hoa"]) {
-        zundamonSprites.mouth.texture = zundamonTextures["hoa"].texture;
-      } else if (zundamonTextures["muhu"]) {
-        zundamonSprites.mouth.texture = zundamonTextures["muhu"].texture;
-      }
-
-      elapsed += 200;
-    }, 200);
-  } else if (character === "metan") {
-    if (metanSpeechInterval) {
-      clearInterval(metanSpeechInterval);
-    }
-
-    if (!metanSprites.mouth) return;
-
-    const estimatedDuration = text.length * 150;
-    let elapsed = 0;
-
-    metanSpeechInterval = setInterval(() => {
-      if (elapsed >= estimatedDuration) {
-        resetMouth("metan");
-        clearInterval(metanSpeechInterval);
-        metanSpeechInterval = null;
-        return;
-      }
-
-      const shouldOpen = Math.random() > 0.5;
-      if (shouldOpen && metanTextures["hoa"]) {
-        metanSprites.mouth.texture = metanTextures["hoa"].texture;
-      } else if (metanTextures["mu"]) {
-        metanSprites.mouth.texture = metanTextures["mu"].texture;
-      }
-
-      elapsed += 200;
-    }, 200);
+  // 既存のインターバルをクリア
+  if (character === "zundamon" && zundamonSpeechInterval) {
+    clearInterval(zundamonSpeechInterval);
+    zundamonSpeechInterval = null;
+  } else if (character === "metan" && metanSpeechInterval) {
+    clearInterval(metanSpeechInterval);
+    metanSpeechInterval = null;
   }
+
+  // 音量ベースの口パクを使用するため、ランダム口パクは無効化
+  // volume_level メッセージで updateZundamonMouth / updateMetanMouth が呼ばれる
 }
 
 function resetMouth(character) {
@@ -714,16 +711,18 @@ function resetMouth(character) {
       clearInterval(zundamonSpeechInterval);
       zundamonSpeechInterval = null;
     }
-    if (zundamonSprites.mouth && zundamonTextures["muhu"]) {
-      zundamonSprites.mouth.texture = zundamonTextures["muhu"].texture;
+    const mouthConfig = config.characters?.zundamon?.mouth || { closed: "muhu" };
+    if (zundamonSprites.mouth && zundamonTextures[mouthConfig.closed]) {
+      zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.closed].texture;
     }
   } else if (character === "metan") {
     if (metanSpeechInterval) {
       clearInterval(metanSpeechInterval);
       metanSpeechInterval = null;
     }
-    if (metanSprites.mouth && metanTextures["smile"]) {
-      metanSprites.mouth.texture = metanTextures["smile"].texture;
+    const mouthConfig = config.characters?.metan?.mouth || { closed: "smile" };
+    if (metanSprites.mouth && metanTextures[mouthConfig.closed]) {
+      metanSprites.mouth.texture = metanTextures[mouthConfig.closed].texture;
     }
   }
 }
