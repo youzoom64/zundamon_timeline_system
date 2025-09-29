@@ -27,7 +27,9 @@
       "mouth": {
         "closed": "muhu",
         "half_open": "hoa",
-        "open": "hoaa"
+        "open": "hoaa",
+        "threshold_open": 0.11,
+        "threshold_half_open": 0.075
       }
     },
     "metan": {
@@ -39,7 +41,9 @@
       "mouth": {
         "closed": "smile",
         "half_open": "o",
-        "open": "waaa"
+        "open": "waaa",
+        "threshold_open": 0.22,
+        "threshold_half_open": 0.15
       }
     }
   },
@@ -53,7 +57,7 @@
     "plugin_dir": "./plugins"
   },
   "logging": {
-    "level": "INFO",
+    "level": "DEBUG",
     "file": "./logs/system.log"
   },
   "automation": {

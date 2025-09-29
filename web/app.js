@@ -544,70 +544,50 @@ function updateMouthByVolume(volume) {
   }
 }
 
-function updateZundamonMouth(volume) {
-  if (!zundamonSprites.mouth) {
-    console.error("[ずんだもん] mouthスプライトが存在しません");
+function updateCharacterMouth(character, volume) {
+  const sprites = character === "zundamon" ? zundamonSprites : metanSprites;
+  const textures = character === "zundamon" ? zundamonTextures : metanTextures;
+
+  if (!sprites.mouth) {
+    console.error(`[${character}] mouthスプライトが存在しません`);
     return;
   }
 
-  const mouthConfig = config.characters?.zundamon?.mouth || {
+  const mouthConfig = config.characters?.[character]?.mouth || {
     closed: "muhu",
     half_open: "hoa",
-    open: "hoaa"
+    open: "hoaa",
+    threshold_open: 0.22,
+    threshold_half_open: 0.15
   };
+
+  const thresholdOpen = mouthConfig.threshold_open || 0.22;
+  const thresholdHalfOpen = mouthConfig.threshold_half_open || 0.15;
 
   let targetTexture = null;
 
-  if (volume > 0.22 && zundamonTextures[mouthConfig.open]) {
+  if (volume > thresholdOpen && textures[mouthConfig.open]) {
     targetTexture = mouthConfig.open;
-  } else if (volume > 0.15 && zundamonTextures[mouthConfig.half_open]) {
+  } else if (volume > thresholdHalfOpen && textures[mouthConfig.half_open]) {
     targetTexture = mouthConfig.half_open;
-  } else if (zundamonTextures[mouthConfig.closed]) {
+  } else if (textures[mouthConfig.closed]) {
     targetTexture = mouthConfig.closed;
   }
 
-  if (targetTexture && zundamonTextures[targetTexture]) {
-    const newTexture = zundamonTextures[targetTexture].texture;
-    if (zundamonSprites.mouth.texture !== newTexture) {
-      zundamonSprites.mouth.texture = newTexture;
+  if (targetTexture && textures[targetTexture]) {
+    const newTexture = textures[targetTexture].texture;
+    if (sprites.mouth.texture !== newTexture) {
+      sprites.mouth.texture = newTexture;
     }
   }
 }
 
+function updateZundamonMouth(volume) {
+  updateCharacterMouth("zundamon", volume);
+}
+
 function updateMetanMouth(volume) {
-  if (!metanSprites.mouth) {
-    console.error("[めたん] mouthスプライトが存在しません");
-    return;
-  }
-
-  const mouthConfig = config.characters?.metan?.mouth || {
-    closed: "smile",
-    half_open: "o",
-    open: "waaa"
-  };
-
-  let targetTexture = null;
-  let debugMsg = "";
-
-  if (volume > 0.22 && metanTextures[mouthConfig.open]) {
-    targetTexture = mouthConfig.open;
-    debugMsg = "大開き";
-  } else if (volume > 0.15 && metanTextures[mouthConfig.half_open]) {
-    targetTexture = mouthConfig.half_open;
-    debugMsg = "半開き";
-  } else if (metanTextures[mouthConfig.closed]) {
-    targetTexture = mouthConfig.closed;
-    debugMsg = "閉じ";
-  }
-
-  if (targetTexture && metanTextures[targetTexture]) {
-    const newTexture = metanTextures[targetTexture].texture;
-    if (metanSprites.mouth.texture !== newTexture) {
-      metanSprites.mouth.texture = newTexture;
-      console.log(`[めたん] ${debugMsg}: ${targetTexture} (vol=${volume.toFixed(3)})`);
-      app.renderer.render(app.stage); // 強制レンダリング
-    }
-  }
+  updateCharacterMouth("metan", volume);
 }
 
 // キャラクターハイライト機能

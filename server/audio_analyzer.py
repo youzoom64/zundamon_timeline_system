@@ -28,68 +28,76 @@ class AudioPlayer:
             # 模擬的な音量レベル送信（別スレッドで）
             self._simulate_audio_playback()
             return
-        
+
         # 実際の音声再生処理
         wav_path = Path(wav_file_path)
         if not wav_path.exists():
             self.logger.error(f"音声ファイルが見つかりません: {wav_file_path}")
             return
-        
+
         try:
             # 音声ファイル読み込み
             data, samplerate = sf.read(wav_file_path)
-            
+
             # モノラルに変換
             if len(data.shape) > 1:
                 data = np.mean(data, axis=1)
-            
+
             p = pyaudio.PyAudio()
-            
+
             # チャンクサイズ（音量分析の間隔）
             chunk_size = int(samplerate * 0.1)  # 0.1秒間隔
-            
+
             stream = p.open(
                 format=pyaudio.paFloat32,
                 channels=1,
                 rate=samplerate,
                 output=True
             )
-            
+
             self.is_playing = True
             self.logger.info(f"音声再生開始: {wav_file_path}")
-            
+
+            # デバッグ情報
+            total_chunks = (len(data) + chunk_size - 1) // chunk_size
+            self.logger.info(f"[音量分析] データ長: {len(data)}, サンプルレート: {samplerate}, チャンクサイズ: {chunk_size}, 予想チャンク数: {total_chunks}")
+
+            chunk_count = 0
             # チャンクごとに再生と音量分析
             for i in range(0, len(data), chunk_size):
                 if not self.is_playing:
+                    self.logger.info(f"[音量分析] 途中停止: {chunk_count}チャンク処理済み")
                     break
-                
+
                 chunk = data[i:i+chunk_size]
-                
+
                 # 音量レベル計算（RMS）
                 if len(chunk) > 0:
                     volume_level = np.sqrt(np.mean(chunk**2))
                     # 0-1の範囲に正規化
                     normalized_volume = min(volume_level * 3, 1.0)
-                    
+
                     # コールバックで音量レベルを送信
                     if self.volume_callback:
                         self.volume_callback(normalized_volume)
-                
+                        chunk_count += 1
+                        self.logger.debug(f"[音量分析] チャンク#{chunk_count}: volume={normalized_volume:.3f}")
+
                 # 音声出力
                 if len(chunk) > 0:
                     stream.write(chunk.astype(np.float32).tobytes())
-            
+
             # 再生終了
             self.is_playing = False
             if self.volume_callback:
                 self.volume_callback(0.0)  # 音量0で終了
-            
+
             stream.stop_stream()
             stream.close()
             p.terminate()
-            
-            self.logger.info(f"音声再生終了: {wav_file_path}")
-            
+
+            self.logger.info(f"音声再生終了: {wav_file_path} (送信チャンク数: {chunk_count})")
+
         except Exception as e:
             self.logger.error(f"音声再生エラー: {e}")
             self.is_playing = False
