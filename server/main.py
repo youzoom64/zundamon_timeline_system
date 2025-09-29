@@ -255,7 +255,12 @@ async def play_audio_async(audio_file: str, text: str, is_comment: bool, charact
                 break
             await asyncio.sleep(0.1)
 
-        # 音声終了処理
+        # 音声スレッド終了を確実に待つ
+        if current_audio_thread:
+            current_audio_thread.join(timeout=1.0)
+
+        # 音声終了処理（音量データが全て送信された後）
+        await asyncio.sleep(0.2)  # 音量キュー処理を待つ
         volume_queue.put({"character": character, "level": "END"})
         logging.info(f"[音声再生] 完了: {text[:20]}... (キャラ: {character})")
 
