@@ -5,9 +5,10 @@ from datetime import datetime
 import logging
 
 class TimelineExecutor:
-    def __init__(self, config, obs_controller):
+    def __init__(self, config, obs_controller, broadcast_callback=None):
         self.config = config
         self.obs_controller = obs_controller
+        self.broadcast_callback = broadcast_callback
         self.zundamon_timeline = None
         self.obs_timeline = None
         self.project_dir = None
@@ -154,24 +155,24 @@ class TimelineExecutor:
     
     async def execute_zundamon_action(self, action):
         """ずんだもんアクション実行"""
-        # TODO: ずんだもん制御をWebSocketで送信
-        character_data = {
-            "action": "update_character",
-            "character": action.get("character", "zundamon"),
-            "position": action.get("position", "center"),
-            "expression": action.get("expression", "normal"),
-            "outfit": action.get("outfit", "usual"),
-            "pose": action.get("pose", "basic"),
-            "blink": action.get("blink", True)
-        }
-        
-        # 音声合成
-        if action.get("text"):
-            speech_data = {
-                "action": "speak",
-                "text": action["text"]
-            }
-            # TODO: WebSocket送信
+        if not self.broadcast_callback:
+            self.logger.warning("broadcast_callbackが設定されていません")
+            return
+
+        character = action.get("character", "zundamon")
+        text = action.get("text", "")
+
+        # 音声合成して喋る
+        if text:
+            await self.broadcast_callback({
+                "action": "speak_text",
+                "text": text,
+                "character": character
+            })
+
+            # 喋り終わるまで待つ（簡易実装: 1文字0.15秒として計算）
+            wait_time = len(text) * 0.15 + 1.0
+            await asyncio.sleep(wait_time)
     
     async def execute_obs_action(self, action):
         """OBSアクション実行"""

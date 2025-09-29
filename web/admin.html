@@ -17,11 +17,11 @@
       display: flex; 
       gap: 20px; 
     }
-    .preview { 
-      width: 650px; 
-      background: white; 
-      padding: 20px; 
-      border-radius: 8px; 
+    .preview {
+      width: 1320px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .controls { 
@@ -93,10 +93,10 @@
       background: #ccc;
       cursor: not-allowed;
     }
-    #preview-container { 
-      border: 1px solid #ddd; 
+    #preview-container {
+      border: 1px solid #ddd;
       background: #333;
-      height: 820px;
+      height: 720px;
       overflow: hidden;
       border-radius: 4px;
     }
@@ -160,6 +160,15 @@
         <button id="speak-btn" class="speech-btn">喋る</button>
       </div>
       
+      <div class="section">
+        <h3>🎬 タイムライン</h3>
+        <select id="project-select" class="speech-input">
+          <option value="">プロジェクトを選択...</option>
+        </select>
+        <button id="timeline-start-btn" class="speech-btn" style="margin-bottom: 10px;">タイムライン開始</button>
+        <button id="timeline-stop-btn" class="preset-btn" style="width: 100%;">タイムライン停止</button>
+      </div>
+
       <div class="section">
         <h3>⚙️ システム</h3>
         <button onclick="testBlink()" class="preset-btn">まばたきテスト</button>

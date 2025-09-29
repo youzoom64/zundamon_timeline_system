@@ -2,11 +2,14 @@ console.log("🔧 管理画面 admin.js 読み込み開始");
 
 // PixiJSアプリケーション（プレビュー用）
 let app = new PIXI.Application({
-  width: 600,
-  height: 800,
+  width: 1280,
+  height: 720,
   backgroundColor: 0x333333
 });
 document.getElementById('preview-container').appendChild(app.view);
+
+// キャンバス全体を右にオフセット
+app.stage.x = 800;
 
 // WebSocket接続
 let ws = null;
@@ -41,17 +44,34 @@ function connectWebSocket() {
   };
 }
 
+// システム設定
+let config = {};
+
 // プリセット設定
 let presets = {};
 let currentState = {
   expression: "normal",
-  pose: "basic", 
+  pose: "basic",
   outfit: "usual"
 };
 
 // プレビュー用キャラクター
 let zundamonContainer;
 let sprites = {};
+
+// 設定読み込み
+async function loadConfig() {
+  try {
+    const response = await fetch('/config/settings.json');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    config = await response.json();
+    console.log("✅ 設定読み込み完了:", config);
+  } catch (error) {
+    console.error("❌ 設定読み込みエラー:", error);
+  }
+}
 
 // プリセット読み込み
 async function loadPresets() {
@@ -214,13 +234,30 @@ function sendToServer(data) {
 
 function handleServerMessage(data) {
   console.log("← サーバー:", data);
-  
+
   switch(data.action) {
     case "speech_start":
       document.getElementById('speech-text').value = '';
       break;
     case "speech_end":
       // 特に処理なし
+      break;
+    case "projects_list":
+      const select = document.getElementById('project-select');
+      select.innerHTML = '<option value="">プロジェクトを選択...</option>';
+      data.projects.forEach(proj => {
+        const option = document.createElement('option');
+        option.value = proj;
+        option.textContent = proj;
+        select.appendChild(option);
+      });
+      console.log("プロジェクト一覧読み込み:", data.projects);
+      break;
+    case "timeline_started":
+      console.log("タイムライン開始:", data.project);
+      break;
+    case "timeline_stopped":
+      console.log("タイムライン停止");
       break;
   }
 }
@@ -283,6 +320,7 @@ function loadAssets() {
     .add("troubled_eyebrow2", "/assets/zundamon_en/eyebrow/troubled_eyebrow2.png")
     .add("muhu", "/assets/zundamon_en/mouth/muhu.png")
     .add("hoa", "/assets/zundamon_en/mouth/hoa.png")
+    .add("hoaa", "/assets/zundamon_en/mouth/hoaa.png")
     .add("triangle", "/assets/zundamon_en/mouth/triangle.png")
     .add("nn", "/assets/zundamon_en/mouth/nn.png")
     .add("nnaa", "/assets/zundamon_en/mouth/nnaa.png")
@@ -461,18 +499,57 @@ function updateCharacterStatus(text, isGood) {
   }
 }
 
+// タイムライン制御
+function loadProjects() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ action: "get_projects" }));
+  }
+}
+
+function startTimeline() {
+  const select = document.getElementById("project-select");
+  const project = select.value;
+
+  if (!project) {
+    alert("プロジェクトを選択してください");
+    return;
+  }
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ action: "start_timeline", project: project }));
+    console.log("タイムライン開始:", project);
+  }
+}
+
+function stopTimeline() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ action: "stop_timeline" }));
+    console.log("タイムライン停止");
+  }
+}
+
 // 初期化
-function init() {
+async function init() {
   console.log("🚀 管理画面初期化");
-  
+
+  // 設定読み込み
+  await loadConfig();
+
   // WebSocket接続
   connectWebSocket();
-  
+
   // プリセット読み込み
   loadPresets();
-  
+
   // ステータス初期化
   updateConnectionStatus("disconnected");
+
+  // タイムラインボタン
+  document.getElementById("timeline-start-btn").onclick = startTimeline;
+  document.getElementById("timeline-stop-btn").onclick = stopTimeline;
+
+  // プロジェクト一覧読み込み（接続後）
+  setTimeout(loadProjects, 1000);
 }
 
 // ページ読み込み完了後に初期化
@@ -516,18 +593,6 @@ function performBlink() {
   }
 }
 
-// 音量による口パク（簡易版）
-function updateMouthByVolume(volume) {
-  if (sprites.mouth) {
-    // 音量に応じて口の形を変える
-    if (volume > 0.4 && app.loader.resources["hoa"]) {
-      sprites.mouth.texture = app.loader.resources["hoa"].texture;
-    } else if (volume > 0.1 && app.loader.resources["muhu"]) {
-      sprites.mouth.texture = app.loader.resources["muhu"].texture;
-    }
-  }
-}
-
 function handleServerMessage(data) {
   console.log("← サーバー:", data);
   
@@ -541,7 +606,7 @@ function handleServerMessage(data) {
       
     case "volume_level":
       console.log("音量レベル:", data.level);
-      updateMouthByVolume(data.level);
+      updateMouthByVolume(data.level, data.character);
       break;
       
     case "speech_end":
@@ -559,7 +624,39 @@ function handleServerMessage(data) {
       console.error("音声エラー:", data.error);
       resetMouth();
       break;
-      
+
+    case "projects_list":
+      const select = document.getElementById('project-select');
+      select.innerHTML = '<option value="">プロジェクトを選択...</option>';
+      data.projects.forEach(proj => {
+        const option = document.createElement('option');
+        option.value = proj;
+        option.textContent = proj;
+        select.appendChild(option);
+      });
+      console.log("プロジェクト一覧読み込み:", data.projects);
+      break;
+
+    case "timeline_started":
+      console.log("タイムライン開始:", data.project);
+      break;
+
+    case "timeline_stopped":
+      console.log("タイムライン停止");
+      break;
+
+    case "speak_text":
+      console.log("タイムライン発話:", data.text, "キャラ:", data.character);
+      // キャラクター指定で音声合成リクエスト（admin.htmlでも音声再生）
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          action: "speak",
+          text: data.text,
+          character: data.character
+        }));
+      }
+      break;
+
     default:
       console.log("未知のメッセージ:", data);
   }
@@ -600,6 +697,9 @@ function startSpeechAnimation(text) {
 function changeMouthTexture(textureKey) {
   if (sprites.mouth && app.loader.resources[textureKey]) {
     sprites.mouth.texture = app.loader.resources[textureKey].texture;
+    console.log(`[口変更] ${textureKey}`);
+  } else if (!app.loader.resources[textureKey]) {
+    console.error(`[口エラー] テクスチャ未登録: ${textureKey}`);
   }
 }
 
@@ -612,15 +712,31 @@ function resetMouth() {
   changeMouthTexture("muhu"); // 閉じた口に戻す
 }
 
-// 音量による口パク（リアルタイム版）
-function updateMouthByVolume(volume) {
-  if (sprites.mouth) {
-    if (volume > 0.4) {
-      changeMouthTexture("hoa"); // 大きく開く
-    } else if (volume > 0.1) {
-      changeMouthTexture("muhu"); // 少し開く
-    } else {
-      changeMouthTexture("muhu"); // 閉じる
-    }
+// 音量による口パク（キャラクター別閾値対応）
+function updateMouthByVolume(volume, character = "zundamon") {
+  if (!sprites.mouth || !config) return;
+
+  const mouthConfig = config.characters?.[character]?.mouth || {
+    closed: "muhu",
+    half_open: "hoa",
+    open: "hoaa",
+    threshold_open: 0.11,
+    threshold_half_open: 0.075
+  };
+
+  const thresholdOpen = mouthConfig.threshold_open || 0.11;
+  const thresholdHalfOpen = mouthConfig.threshold_half_open || 0.075;
+
+  console.log(`[口判定] vol=${volume.toFixed(3)}, open=${thresholdOpen}, half=${thresholdHalfOpen}, char=${character}`);
+
+  if (volume >= thresholdOpen) {
+    console.log(`  → open: ${mouthConfig.open}`);
+    changeMouthTexture(mouthConfig.open);
+  } else if (volume >= thresholdHalfOpen) {
+    console.log(`  → half: ${mouthConfig.half_open}`);
+    changeMouthTexture(mouthConfig.half_open);
+  } else {
+    console.log(`  → closed: ${mouthConfig.closed}`);
+    changeMouthTexture(mouthConfig.closed);
   }
 }

@@ -38,7 +38,12 @@ speech_lock = asyncio.Lock()  # 音声制御ロック
 # 割り込み可能音声システム用グローバル変数
 current_audio_player = None  # 現在の音声プレイヤーインスタンス
 current_audio_thread = None  # 現在の音声再生スレッド
+
+# タイムライン制御用グローバル変数
+timeline_executor = None
+timeline_task = None
 timeline_position = 0  # タイムライン停止位置記録
+config = None  # システム設定
 
 async def browser_handler(websocket):
     """ブラウザ用WebSocketハンドラー（admin.html、index.html、外部制御スクリプト用）"""
@@ -60,6 +65,13 @@ async def browser_handler(websocket):
                     await handle_speech_request(data.get("text", ""), character=data.get("character", "zundamon"))
                 elif data.get("action") in ["change_expression", "change_pose", "change_outfit"]:
                     await broadcast_to_browser(data)
+                # タイムライン制御
+                elif data.get("action") == "get_projects":
+                    await handle_get_projects(websocket)
+                elif data.get("action") == "start_timeline":
+                    await handle_start_timeline(data.get("project"))
+                elif data.get("action") == "stop_timeline":
+                    await handle_stop_timeline()
                 # 外部制御スクリプトからのコマンド
                 elif data.get("action") == "speak":
                     await handle_speech_request(data.get("text", ""), character=data.get("character", "zundamon"))
@@ -403,6 +415,87 @@ async def volume_queue_processor():
         except Exception as e:
             logging.error(f"音量キュー処理エラー: {e}")
 
+async def handle_get_projects(websocket):
+    """プロジェクト一覧取得"""
+    logging.info("[タイムライン] プロジェクト一覧取得要求")
+    from pathlib import Path
+    project_dir = Path("import/timeline_projects")
+    projects = []
+
+    logging.info(f"[タイムライン] プロジェクトディレクトリ: {project_dir.absolute()}")
+
+    if project_dir.exists():
+        for item in project_dir.iterdir():
+            logging.info(f"[タイムライン] チェック中: {item.name}")
+            if item.is_dir() and (item / "timeline.json").exists():
+                projects.append(item.name)
+                logging.info(f"[タイムライン] プロジェクト追加: {item.name}")
+
+    await websocket.send(json.dumps({
+        "action": "projects_list",
+        "projects": projects
+    }, ensure_ascii=False))
+    logging.info(f"[タイムライン] プロジェクト一覧送信: {projects}")
+
+async def handle_timeline_action(action_data):
+    """タイムライン用アクション処理（音声合成含む）"""
+    action = action_data.get("action")
+
+    if action == "speak_text":
+        # 音声合成して喋らせる
+        text = action_data.get("text", "")
+        character = action_data.get("character", "zundamon")
+        if text:
+            await handle_speech_request(text, character=character)
+    else:
+        # その他のアクションはブラウザに転送
+        await broadcast_to_browser(action_data)
+
+async def handle_start_timeline(project_name):
+    """タイムライン開始"""
+    global timeline_executor, timeline_task, config, obs_controller
+
+    if not project_name:
+        logging.error("[タイムライン] プロジェクト名が指定されていません")
+        return
+
+    if timeline_task and not timeline_task.done():
+        logging.info("[タイムライン] 既存タイムライン停止中...")
+        await handle_stop_timeline()
+
+    try:
+        from server.timeline_executor import TimelineExecutor
+
+        timeline_executor = TimelineExecutor(config, obs_controller, handle_timeline_action)
+        await timeline_executor.load_project(project_name)
+
+        logging.info(f"[タイムライン] 開始: {project_name}")
+        timeline_task = asyncio.create_task(timeline_executor.execute_timeline())
+
+        await broadcast_to_browser({"action": "timeline_started", "project": project_name})
+
+    except Exception as e:
+        logging.error(f"[タイムライン] 開始エラー: {e}")
+
+async def handle_stop_timeline():
+    """タイムライン停止"""
+    global timeline_executor, timeline_task
+
+    if timeline_executor:
+        timeline_executor.stop()
+        timeline_executor = None
+
+    if timeline_task and not timeline_task.done():
+        timeline_task.cancel()
+        try:
+            await timeline_task
+        except asyncio.CancelledError:
+            pass
+        timeline_task = None
+
+    logging.info("[タイムライン] 停止")
+    await broadcast_to_browser({"action": "timeline_stopped"})
+
 async def idle_animation_loop():
     """全キャラクター独立まばたき"""
     import random
@@ -477,8 +570,10 @@ async def initialize_system(config):
     if plugin_manager:
         await plugin_manager.execute_hook('on_system_start')
 
-async def main_server(config):
+async def main_server(config_param):
     """メインサーバー起動"""
+    global config
+    config = config_param
     await initialize_system(config)
     
     http_port = config["servers"]["http_port"]

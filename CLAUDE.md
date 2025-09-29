@@ -343,6 +343,158 @@ config["timeline"]["ending_duration"]        # エンディング時間（秒）
 - **broadcast_lv_id**: 現在処理中の放送ID
 - **broadcast_title**: 現在処理中の放送タイトル
 
+## 音声合成・口パクシステム
+
+### 音量ベース口パクアニメーション
+
+**仕組み:**
+1. VOICEVOX音声合成時、RMS音量分析を実行（`server/voicevox_client.py`）
+2. 音量データをWebSocketでブラウザに送信（`volume_level`メッセージ）
+3. ブラウザ側で音量閾値判定し、3段階の口テクスチャを切り替え
+
+**キャラクター別設定（`config/settings.json`）:**
+```json
+"zundamon": {
+  "mouth": {
+    "closed": "muhu",
+    "half_open": "hoa",
+    "open": "hoaa",
+    "threshold_open": 0.11,
+    "threshold_half_open": 0.075
+  }
+},
+"metan": {
+  "mouth": {
+    "closed": "smile",
+    "half_open": "o",
+    "open": "waaa",
+    "threshold_open": 0.22,
+    "threshold_half_open": 0.15
+  }
+}
+```
+
+**判定ロジック（`web/app.js`, `web/admin.js`）:**
+```javascript
+function updateMouthByVolume(volume, character = "zundamon") {
+  if (!sprites.mouth || !config) return;
+
+  const mouthConfig = config.characters?.[character]?.mouth || {
+    closed: "muhu",
+    half_open: "hoa",
+    open: "hoaa",
+    threshold_open: 0.11,
+    threshold_half_open: 0.075
+  };
+
+  const thresholdOpen = mouthConfig.threshold_open || 0.11;
+  const thresholdHalfOpen = mouthConfig.threshold_half_open || 0.075;
+
+  if (volume >= thresholdOpen) {
+    changeMouthTexture(mouthConfig.open);       // 大きく開く
+  } else if (volume >= thresholdHalfOpen) {
+    changeMouthTexture(mouthConfig.half_open);  // 半開き
+  } else {
+    changeMouthTexture(mouthConfig.closed);     // 閉じる
+  }
+}
+```
+
+**重要な実装ポイント:**
+- `config`オブジェクトを**必ず初期化時に読み込む**（`await loadConfig()`）
+- `config`が未定義だと`updateMouthByVolume`が早期リターンして動作しない
+- キャラクター判定は`data.character`をWebSocketメッセージから受け取る
+- 音量データは約0.05秒間隔で送信される（リアルタイム性確保）
+
+### admin.html の config 読み込み必須設定
+
+**admin.js での config 初期化（2025-09-30修正）:**
+
+```javascript
+// 1. グローバル変数宣言
+let config = {};
+
+// 2. loadConfig関数実装
+async function loadConfig() {
+  try {
+    const response = await fetch('/config/settings.json');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    config = await response.json();
+    console.log("✅ 設定読み込み完了:", config);
+  } catch (error) {
+    console.error("❌ 設定読み込みエラー:", error);
+  }
+}
+
+// 3. 初期化時に必ず呼び出し
+async function init() {
+  await loadConfig();  // ← これがないと口パクが動かない
+  connectWebSocket();
+  loadPresets();
+  // ...
+}
+```
+
+**修正箇所:**
+- `web/admin.js:48` - config変数宣言
+- `web/admin.js:63-74` - loadConfig関数追加
+- `web/admin.js:536` - 初期化時にawait loadConfig()呼び出し
+
+**トラブルシューティング:**
+- 口パクが2種類しか動かない → config未読み込み、ブラウザキャッシュ
+- `config is not defined` エラー → loadConfig()の呼び出し忘れ
+- キャラクター切り替えで閾値が変わらない → character引数の渡し忘れ
+
+**デバッグ確認:**
+```javascript
+// ブラウザコンソールで確認
+console.log("config:", config);
+console.log("characters:", config.characters);
+```
+
+## デュアルキャラクターシステム（ずんだもん＆めたん）
+
+### タイムラインJSONフォーマット
+```json
+{
+  "title": "ずんだもん＆めたん掛け合いタイムライン",
+  "timeline": [
+    {
+      "time": 0.0,
+      "character": "zundamon",
+      "position": "right",
+      "expression": "normal",
+      "text": "こんにちはなのだ！"
+    },
+    {
+      "time": 3.0,
+      "character": "metan",
+      "position": "left",
+      "expression": "happy",
+      "text": "こんにちは、四国めたんです！"
+    }
+  ]
+}
+```
+
+### キャラクター制御データフロー
+```
+timeline.json → timeline_executor.py → WebSocket(action: speak_text)
+  → main.py → voicevox_client.py → 音声合成 + RMS分析
+  → WebSocket(action: load_character, volume_level) → app.js
+  → キャラクター表示 + 口パク制御
+```
+
+### 実装済み機能
+- ✅ 2キャラクター交互会話
+- ✅ キャラクター別音声ID（ずんだもん:3, めたん:2）
+- ✅ キャラクター別音量閾値
+- ✅ 位置制御（left/right）
+- ✅ 表情・ポーズ・衣装切り替え
+- ✅ リアルタイム口パクアニメーション
+
 ## 実装予定・TODO
 
 - [ ] RAGシステムのDBパス設定
@@ -351,3 +503,6 @@ config["timeline"]["ending_duration"]        # エンディング時間（秒）
 - [ ] プラグインシステム拡張
 - [ ] 音声ストリーミング
 - [ ] 配信自動化フロー
+- [x] デュアルキャラクターシステム（ずんだもん＆めたん）
+- [x] 音量ベース口パクアニメーション（3段階）
+- [x] admin.html の config 読み込み実装
