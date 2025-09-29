@@ -5,6 +5,7 @@ import threading
 import queue
 import logging
 import sys
+import time
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
@@ -33,6 +34,11 @@ prepared_audio = None  # 準備済み音声ファイルパス
 current_speech_task = None  # 現在の音声再生タスク
 is_speaking = False  # 音声再生中フラグ
 speech_lock = asyncio.Lock()  # 音声制御ロック
+
+# 割り込み可能音声システム用グローバル変数
+current_audio_player = None  # 現在の音声プレイヤーインスタンス
+current_audio_thread = None  # 現在の音声再生スレッド
+timeline_position = 0  # タイムライン停止位置記録
 
 async def browser_handler(websocket):
     """ブラウザ用WebSocketハンドラー（admin.html、index.html、外部制御スクリプト用）"""
@@ -157,13 +163,13 @@ async def process_obs_control_command(data):
     else:
         logging.warning(f"[OBS制御] 未知のコマンド: {action}")
 
-async def handle_speech_request(text: str, is_comment=False, use_prepared=False):
-    """音声合成要求処理"""
+async def handle_speech_request(text: str, is_comment=False, use_prepared=False, character="zundamon"):
+    """音声合成要求処理（キャラクター対応）"""
     global voicevox, audio_analyzer, plugin_manager, volume_queue
     global current_speech_task, is_speaking, speech_lock, prepared_audio
 
     async with speech_lock:
-        logging.info(f"[音声合成] テキスト: {text}, コメント: {is_comment}, 準備済み使用: {use_prepared}")
+        logging.info(f"[音声合成] テキスト: {text}, キャラクター: {character}, コメント: {is_comment}")
 
         # コメントの場合、既存の音声を停止
         if is_comment and is_speaking and current_speech_task:
@@ -175,19 +181,26 @@ async def handle_speech_request(text: str, is_comment=False, use_prepared=False)
             if plugin_manager:
                 await plugin_manager.execute_hook('on_speech_start', text)
 
+            # キャラクター別の音声ID設定
+            if character == "metan":
+                voice_id = 2  # 四国めたん
+            else:
+                voice_id = 3  # ずんだもん（デフォルト）
+
             # 準備済み音声を使用するか、新規生成するか
             if use_prepared and prepared_audio:
                 audio_file = prepared_audio
                 logging.info(f"[音声合成] 準備済み音声使用: {audio_file}")
             else:
-                audio_file = await voicevox.synthesize_speech(text)
-                logging.info(f"[音声合成] 新規生成: {audio_file}")
+                audio_file = await voicevox.synthesize_speech(text, speaker_id=voice_id)
+                logging.info(f"[音声合成] 新規生成: {audio_file} (キャラ: {character})")
 
             if audio_file:
                 is_speaking = True
                 await broadcast_to_browser({
                     "action": "speech_start",
-                    "text": text
+                    "text": text,
+                    "character": character
                 })
 
                 if audio_analyzer:
@@ -214,38 +227,52 @@ async def handle_speech_request(text: str, is_comment=False, use_prepared=False)
             is_speaking = False
 
 async def play_audio_async(audio_file: str, text: str, is_comment: bool):
-    """非同期音声再生"""
+    """割り込み可能な非同期音声再生"""
     global audio_analyzer, volume_queue, is_speaking
+    global current_audio_player, current_audio_thread
 
     try:
+        # 新しいプレイヤーインスタンス作成
         player = audio_analyzer.create_player()
+        current_audio_player = player
 
-        def play_audio():
-            try:
-                player.play_with_analysis(audio_file)
-                volume_queue.put("END")
-            except Exception as e:
-                logging.error(f"音声再生エラー: {e}")
-                volume_queue.put("END")
+        logging.info(f"[音声再生] 開始: {text[:30]}...")
 
-        audio_thread = threading.Thread(target=play_audio, daemon=True)
-        audio_thread.start()
+        # play_asyncで非ブロッキング再生開始
+        current_audio_thread = player.play_async(audio_file)
 
-        # スレッド完了まで待機
-        audio_thread.join()
+        # 再生開始通知
+        await broadcast_to_browser({
+            "action": "speech_start",
+            "text": text
+        })
 
+        # 再生完了まで待機（割り込み可能）
+        while current_audio_thread and current_audio_thread.is_alive():
+            if current_audio_player and not current_audio_player.is_playing:
+                break
+            await asyncio.sleep(0.1)
+
+        # 音声終了処理
+        volume_queue.put("END")
         logging.info(f"[音声再生] 完了: {text[:20]}...")
 
         # コメント応答完了時に次のキューを処理
         if is_comment:
             await process_next_comment_queue()
 
+    except Exception as e:
+        logging.error(f"[音声再生] エラー: {e}")
+        volume_queue.put("END")
     finally:
+        current_audio_player = None
+        current_audio_thread = None
         is_speaking = False
 
 async def handle_comment_interrupt(data):
-    """コメント割り込み処理"""
+    """コメント割り込み処理（新実装）"""
     global plugin_manager, comment_queue, prepared_audio, is_speaking
+    global current_audio_player, timeline_position
 
     logging.info(f"[コメント] 割り込み: {data}")
 
@@ -255,22 +282,31 @@ async def handle_comment_interrupt(data):
 
         username = data.get("username", "名無しさん")
         comment_text = data.get("text", "")
-        response_text = f"{username}さん、コメントありがとうございます！"
 
-        if is_speaking:
-            # 応答中の場合はキューに追加
-            comment_queue.append(response_text)
-            logging.info(f"[コメントキュー] 追加 ({len(comment_queue)}件): {response_text[:20]}...")
+        # タイムライン読み上げ中の場合は即座に停止
+        if is_speaking and current_audio_player:
+            logging.info("[コメント] タイムライン読み上げを停止します")
 
-            # キューの先頭（新規追加）の場合は即座にAPI準備
-            if len(comment_queue) == 1:
-                await prepare_next_audio()
-        else:
-            # 音声停止中の場合は即座に応答開始
-            await handle_speech_request(response_text, is_comment=True)
+            # タイムライン位置を記録（現在は簡易実装）
+            timeline_position = time.time()
+
+            # 音声を即座に停止
+            current_audio_player.stop()
+            logging.info(f"[コメント] 音声停止完了 - 位置記録: {timeline_position}")
+
+        # 四国めたんに「質問がきたわよ」と言わせる
+        metan_text = "質問がきたわよ"
+        await handle_speech_request(metan_text, is_comment=False, character="metan")
+
+        # 少し間を置いてからずんだもんの応答
+        await asyncio.sleep(0.5)
+
+        # ずんだもんの応答
+        zundamon_response = f"{username}さん、コメントありがとうなのだ！"
+        await handle_speech_request(zundamon_response, is_comment=True, character="zundamon")
 
         if plugin_manager:
-            await plugin_manager.execute_hook('on_comment_response', response_text)
+            await plugin_manager.execute_hook('on_comment_response', zundamon_response)
 
     except Exception as e:
         logging.error(f"コメント処理エラー: {e}")
