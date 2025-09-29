@@ -552,16 +552,25 @@ function updateZundamonMouth(volume) {
 
   const mouthConfig = config.characters?.zundamon?.mouth || {
     closed: "muhu",
-    half_open: "muhu",
-    open: "hoa"
+    half_open: "hoa",
+    open: "hoaa"
   };
 
+  let targetTexture = null;
+
   if (volume > 0.22 && zundamonTextures[mouthConfig.open]) {
-    zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.open].texture;
+    targetTexture = mouthConfig.open;
   } else if (volume > 0.15 && zundamonTextures[mouthConfig.half_open]) {
-    zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.half_open].texture;
+    targetTexture = mouthConfig.half_open;
   } else if (zundamonTextures[mouthConfig.closed]) {
-    zundamonSprites.mouth.texture = zundamonTextures[mouthConfig.closed].texture;
+    targetTexture = mouthConfig.closed;
+  }
+
+  if (targetTexture && zundamonTextures[targetTexture]) {
+    const newTexture = zundamonTextures[targetTexture].texture;
+    if (zundamonSprites.mouth.texture !== newTexture) {
+      zundamonSprites.mouth.texture = newTexture;
+    }
   }
 }
 
