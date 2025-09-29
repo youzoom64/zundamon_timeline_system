@@ -54,12 +54,15 @@ async def browser_handler(websocket):
                 
                 # ブラウザからの直接制御
                 if data.get("action") == "speak_text":
-                    await handle_speech_request(data.get("text", ""))
+                    await handle_speech_request(data.get("text", ""), character=data.get("character", "zundamon"))
+                elif data.get("action") == "speech_start":
+                    # テスト用: speech_startを直接受信した場合も処理
+                    await handle_speech_request(data.get("text", ""), character=data.get("character", "zundamon"))
                 elif data.get("action") in ["change_expression", "change_pose", "change_outfit"]:
                     await broadcast_to_browser(data)
                 # 外部制御スクリプトからのコマンド
                 elif data.get("action") == "speak":
-                    await handle_speech_request(data.get("text", ""))
+                    await handle_speech_request(data.get("text", ""), character=data.get("character", "zundamon"))
                 elif data.get("action") in ["change_expression", "change_pose", "change_outfit", "blink"]:
                     await broadcast_to_browser(data)
                 else:
@@ -205,7 +208,7 @@ async def handle_speech_request(text: str, is_comment=False, use_prepared=False,
 
                 if audio_analyzer:
                     current_speech_task = asyncio.create_task(
-                        play_audio_async(audio_file, text, is_comment)
+                        play_audio_async(audio_file, text, is_comment, character)
                     )
                     await current_speech_task
             else:
@@ -226,26 +229,25 @@ async def handle_speech_request(text: str, is_comment=False, use_prepared=False,
             })
             is_speaking = False
 
-async def play_audio_async(audio_file: str, text: str, is_comment: bool):
-    """割り込み可能な非同期音声再生"""
+async def play_audio_async(audio_file: str, text: str, is_comment: bool, character: str):
+    """割り込み可能な非同期音声再生（キャラクター対応）"""
     global audio_analyzer, volume_queue, is_speaking
     global current_audio_player, current_audio_thread
 
     try:
-        # 新しいプレイヤーインスタンス作成
-        player = audio_analyzer.create_player()
+        # キャラクター情報を含むvolume_callbackを作成
+        def volume_callback(level):
+            volume_queue.put({"character": character, "level": level})
+
+        # AudioPlayerを直接作成（キャラクター別コールバック）
+        from server.audio_analyzer import AudioPlayer
+        player = AudioPlayer(volume_callback=volume_callback)
         current_audio_player = player
 
-        logging.info(f"[音声再生] 開始: {text[:30]}...")
+        logging.info(f"[音声再生] 開始: {text[:30]}... (キャラ: {character})")
 
         # play_asyncで非ブロッキング再生開始
         current_audio_thread = player.play_async(audio_file)
-
-        # 再生開始通知
-        await broadcast_to_browser({
-            "action": "speech_start",
-            "text": text
-        })
 
         # 再生完了まで待機（割り込み可能）
         while current_audio_thread and current_audio_thread.is_alive():
@@ -254,8 +256,8 @@ async def play_audio_async(audio_file: str, text: str, is_comment: bool):
             await asyncio.sleep(0.1)
 
         # 音声終了処理
-        volume_queue.put("END")
-        logging.info(f"[音声再生] 完了: {text[:20]}...")
+        volume_queue.put({"character": character, "level": "END"})
+        logging.info(f"[音声再生] 完了: {text[:20]}... (キャラ: {character})")
 
         # コメント応答完了時に次のキューを処理
         if is_comment:
@@ -263,7 +265,7 @@ async def play_audio_async(audio_file: str, text: str, is_comment: bool):
 
     except Exception as e:
         logging.error(f"[音声再生] エラー: {e}")
-        volume_queue.put("END")
+        volume_queue.put({"character": character, "level": "END"})
     finally:
         current_audio_player = None
         current_audio_thread = None
@@ -358,20 +360,40 @@ async def process_next_comment_queue():
                     await prepare_next_audio()
 
 async def volume_queue_processor():
-    """音量キュー処理"""
+    """音量キュー処理（キャラクター対応）"""
     global volume_queue, plugin_manager
 
     while True:
         try:
-            volume_level = volume_queue.get_nowait()
-            if volume_level == "END":
+            volume_data = volume_queue.get_nowait()
+
+            # 辞書形式のキャラクター付きデータ
+            if isinstance(volume_data, dict):
+                character = volume_data.get("character", "zundamon")
+                level = volume_data.get("level")
+
+                if level == "END":
+                    await broadcast_to_browser({
+                        "action": "speech_end",
+                        "character": character
+                    })
+                    if plugin_manager:
+                        await plugin_manager.execute_hook('on_speech_end')
+                elif isinstance(level, (int, float)):
+                    await broadcast_to_browser({
+                        "action": "volume_level",
+                        "level": level,
+                        "character": character
+                    })
+            # 旧形式との互換性（キャラクター指定なし）
+            elif volume_data == "END":
                 await broadcast_to_browser({"action": "speech_end"})
                 if plugin_manager:
                     await plugin_manager.execute_hook('on_speech_end')
-            elif isinstance(volume_level, (int, float)):
+            elif isinstance(volume_data, (int, float)):
                 await broadcast_to_browser({
                     "action": "volume_level",
-                    "level": volume_level
+                    "level": volume_data
                 })
         except queue.Empty:
             await asyncio.sleep(0.01)

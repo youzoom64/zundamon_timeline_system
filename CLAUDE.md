@@ -90,10 +90,14 @@
 ```
 run.py → obs_controller.py → OBS WebSocket → OBSシーン切替
                                               ↓
-                         OBS Browser Source → localhost:5000/index.html
+                         OBS Browser Source → http://localhost:5000/web/index.html
                                               ↓
                          web/app.js → WebSocket接続(8767) → server/main.py
 ```
+
+### アクセスURL
+- **キャラクター表示画面（OBS用）**: http://localhost:5000/web/index.html
+- **管理画面**: http://localhost:5000/web/admin.html
 
 ### 制御・終了フロー
 ```
