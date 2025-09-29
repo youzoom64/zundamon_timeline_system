@@ -73,12 +73,12 @@ const characters = {
   zundamon: {
     name: "ずんだもん",
     assetPath: "/assets/zundamon_en",
-    position: { x: 700, y: 50 } // 右側
+    position: { x: 750, y: 50 } // 右側
   },
   metan: {
     name: "四国めたん",
     assetPath: "/assets/shikoku_metan_en",
-    position: { x: 300, y: 50 } // 左側
+    position: { x: 550, y: 80 } // 左側（右寄り・少し下）
   }
 };
 
@@ -453,9 +453,9 @@ function createBothCharacters() {
   zundamonContainer.y = characters.zundamon.position.y;
   app.stage.addChild(zundamonContainer);
 
-  // 四国めたんコンテナ作成
+  // 四国めたんコンテナ作成（左右反転、90%サイズ）
   metanContainer = new PIXI.Container();
-  metanContainer.scale.set(0.6);
+  metanContainer.scale.set(-0.54, 0.54);  // 0.6 * 0.9 = 0.54
   metanContainer.x = characters.metan.position.x;
   metanContainer.y = characters.metan.position.y;
   app.stage.addChild(metanContainer);
