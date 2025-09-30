@@ -220,13 +220,97 @@ class OBSController:
         if not self.ws:
             self.logger.warning(f"OBS未接続 - 表示切替模擬: {source_name} = {visible}")
             return False
-        
+
         try:
             # TODO: 実装 - ソースID取得が必要
             self.logger.info(f"表示切替: {source_name} = {visible}")
             return True
         except Exception as e:
             self.logger.error(f"表示切替エラー: {e}")
+            return False
+
+    def add_media_source(self, scene_name: str, source_name: str, file_path: str):
+        """メディアソース（動画）を追加"""
+        if not self.ws:
+            self.logger.warning("OBS未接続")
+            return False
+
+        # 絶対パスに変換し、Windowsパスの場合はスラッシュに統一
+        import os
+        abs_path = os.path.abspath(file_path)
+        # Windowsパスをスラッシュに変換（OBS互換性）
+        normalized_path = abs_path.replace('\\', '/')
+
+        source_settings = {
+            "local_file": normalized_path,
+            "looping": False,
+            "restart_on_activate": True,
+            "hw_decode": True,
+            "clear_on_media_end": False
+        }
+
+        try:
+            self.ws.call(requests.CreateInput(
+                sceneName=scene_name,
+                inputName=source_name,
+                inputKind="ffmpeg_source",
+                inputSettings=source_settings
+            ))
+            self.logger.info(f"メディアソース追加: {source_name} ({normalized_path})")
+            return True
+        except Exception as e:
+            self.logger.error(f"メディアソース追加エラー: {e}")
+            return False
+
+    def play_media_source(self, source_name: str):
+        """メディアソースを再生"""
+        if not self.ws:
+            self.logger.warning(f"OBS未接続 - メディア再生模擬: {source_name}")
+            return False
+
+        try:
+            self.ws.call(requests.TriggerMediaInputAction(
+                inputName=source_name,
+                mediaAction="OBS_WEBSOCKET_MEDIA_INPUT_ACTION_RESTART"
+            ))
+            self.logger.info(f"メディア再生: {source_name}")
+            return True
+        except Exception as e:
+            self.logger.error(f"メディア再生エラー: {e}")
+            return False
+
+    def get_media_duration(self, source_name: str) -> Optional[float]:
+        """メディアソースの再生時間を取得（ミリ秒）"""
+        if not self.ws:
+            return None
+
+        try:
+            response = self.ws.call(requests.GetMediaInputStatus(inputName=source_name))
+            duration = response.getMediaDuration()
+            self.logger.debug(f"メディア再生時間: {source_name} = {duration}ms")
+            return duration / 1000.0  # 秒に変換
+        except Exception as e:
+            self.logger.error(f"メディア時間取得エラー: {e}")
+            return None
+
+    def wait_for_media_end(self, source_name: str, timeout: float = 600.0):
+        """メディアソースの再生終了を待機"""
+        if not self.ws:
+            self.logger.warning(f"OBS未接続 - 待機模擬: {source_name}")
+            return False
+
+        try:
+            duration = self.get_media_duration(source_name)
+            if duration:
+                self.logger.info(f"メディア再生待機: {source_name} ({duration:.1f}秒)")
+                time.sleep(min(duration, timeout))
+                return True
+            else:
+                self.logger.warning(f"メディア時間取得失敗。タイムアウト待機: {timeout}秒")
+                time.sleep(timeout)
+                return False
+        except Exception as e:
+            self.logger.error(f"メディア待機エラー: {e}")
             return False
     
     def get_scene_list(self):

@@ -12,23 +12,24 @@ class TimelineGenerator:
         # Aシステムのデータベースパス
         self.db_path = "C:/project_root/app_workspaces/ncv_special_monitor/data/ncv_monitor.db"
 
-    def generate_from_broadcasts(self, broadcast_ids: List[str], title: str = "データベース生成タイムライン") -> Dict:
+    def generate_from_broadcasts(self, broadcast_ids: List[str], user_id: str = None, title: str = "データベース生成タイムライン") -> Dict:
         """
         データベースから放送IDリストに基づいてタイムライン生成
 
         Args:
             broadcast_ids: 放送IDリスト（例: ["lv348354633", "lv348354634"]）
+            user_id: フィルタリング対象のユーザーID（指定時は該当ユーザーのコメントのみ取得）
             title: タイムラインタイトル
 
         Returns:
             timeline_executor互換のJSONデータ
         """
-        self.logger.info(f"タイムライン生成開始: {len(broadcast_ids)}件の放送")
+        self.logger.info(f"タイムライン生成開始: {len(broadcast_ids)}件の放送, user_id={user_id or '全ユーザー'}")
 
         try:
             # データベースからデータ取得
-            comments_data = self._fetch_comments_from_db(broadcast_ids)
-            ai_analyses_data = self._fetch_ai_analyses_from_db(broadcast_ids)
+            comments_data = self._fetch_comments_from_db(broadcast_ids, user_id)
+            ai_analyses_data = self._fetch_ai_analyses_from_db(broadcast_ids, user_id)
 
             # データ統合・ソート
             combined_data = self._combine_and_sort_data(comments_data, ai_analyses_data)
@@ -47,20 +48,31 @@ class TimelineGenerator:
             self.logger.error(f"タイムライン生成エラー: {e}")
             return self._create_empty_timeline(title)
 
-    def _fetch_comments_from_db(self, broadcast_ids: List[str]) -> List[Dict]:
-        """commentsテーブルからデータ取得"""
+    def _fetch_comments_from_db(self, broadcast_ids: List[str], user_id: str = None) -> List[Dict]:
+        """commentsテーブルからデータ取得（user_idでフィルタリング可能）"""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 placeholders = ",".join("?" for _ in broadcast_ids)
 
-                cursor.execute(f"""
-                    SELECT comment_text, user_name, broadcast_title, broadcast_lv_id,
-                           timestamp, elapsed_time
-                    FROM comments
-                    WHERE broadcast_lv_id IN ({placeholders})
-                    ORDER BY timestamp
-                """, broadcast_ids)
+                if user_id:
+                    # 特定ユーザーのみ
+                    cursor.execute(f"""
+                        SELECT comment_text, user_name, broadcast_title, broadcast_lv_id,
+                               timestamp, elapsed_time
+                        FROM comments
+                        WHERE broadcast_lv_id IN ({placeholders}) AND user_id = ?
+                        ORDER BY timestamp
+                    """, broadcast_ids + [user_id])
+                else:
+                    # 全ユーザー
+                    cursor.execute(f"""
+                        SELECT comment_text, user_name, broadcast_title, broadcast_lv_id,
+                               timestamp, elapsed_time
+                        FROM comments
+                        WHERE broadcast_lv_id IN ({placeholders})
+                        ORDER BY timestamp
+                    """, broadcast_ids)
 
                 rows = cursor.fetchall()
                 return [{
@@ -77,20 +89,31 @@ class TimelineGenerator:
             self.logger.error(f"コメント取得エラー: {e}")
             return []
 
-    def _fetch_ai_analyses_from_db(self, broadcast_ids: List[str]) -> List[Dict]:
-        """ai_analysesテーブルからデータ取得"""
+    def _fetch_ai_analyses_from_db(self, broadcast_ids: List[str], user_id: str = None) -> List[Dict]:
+        """ai_analysesテーブルからデータ取得（user_idでフィルタリング可能）"""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 placeholders = ",".join("?" for _ in broadcast_ids)
 
-                cursor.execute(f"""
-                    SELECT analysis_result, broadcast_title, broadcast_lv_id,
-                           timestamp, analysis_type
-                    FROM ai_analyses
-                    WHERE broadcast_lv_id IN ({placeholders})
-                    ORDER BY timestamp
-                """, broadcast_ids)
+                if user_id:
+                    # 特定ユーザーのみ
+                    cursor.execute(f"""
+                        SELECT analysis_result, broadcast_title, broadcast_lv_id,
+                               broadcast_start_time, 'summary'
+                        FROM ai_analyses
+                        WHERE broadcast_lv_id IN ({placeholders}) AND user_id = ?
+                        ORDER BY broadcast_start_time
+                    """, broadcast_ids + [user_id])
+                else:
+                    # 全ユーザー
+                    cursor.execute(f"""
+                        SELECT analysis_result, broadcast_title, broadcast_lv_id,
+                               broadcast_start_time, 'summary'
+                        FROM ai_analyses
+                        WHERE broadcast_lv_id IN ({placeholders})
+                        ORDER BY broadcast_start_time
+                    """, broadcast_ids)
 
                 rows = cursor.fetchall()
                 return [{
@@ -178,11 +201,11 @@ class TimelineGenerator:
             }]
         }
 
-    def estimate_total_duration(self, broadcast_ids: List[str]) -> float:
+    def estimate_total_duration(self, broadcast_ids: List[str], user_id: str = None) -> float:
         """タイムライン総実行時間推定"""
         try:
-            comments_data = self._fetch_comments_from_db(broadcast_ids)
-            ai_analyses_data = self._fetch_ai_analyses_from_db(broadcast_ids)
+            comments_data = self._fetch_comments_from_db(broadcast_ids, user_id)
+            ai_analyses_data = self._fetch_ai_analyses_from_db(broadcast_ids, user_id)
             combined_data = self._combine_and_sort_data(comments_data, ai_analyses_data)
 
             total_duration = 0.0

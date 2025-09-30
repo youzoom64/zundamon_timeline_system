@@ -58,53 +58,61 @@ class TimelineExecutor:
         latest_project = max(project_dirs, key=lambda d: d.stat().st_mtime)
         return latest_project.name
     
+    async def execute_timeline_from_json(self, timeline_json):
+        """JSON形式のタイムラインを直接実行"""
+        self.zundamon_timeline = timeline_json
+        self.obs_timeline = None
+        self.project_dir = None
+
+        return await self.execute_timeline()
+
     async def execute_timeline(self):
         """タイムライン実行"""
         if not self.zundamon_timeline:
             raise ValueError("タイムラインが読み込まれていません")
-        
+
         self.is_running = True
         self.start_time = asyncio.get_event_loop().time()
         actions_executed = 0
-        
+
         try:
             # 統合タイムライン作成
             combined_timeline = self.merge_timelines()
-            
+
             # OBSにテキスト情報送信
             await self.send_text_to_obs()
-            
+
             # タイムライン実行
             for i, action in enumerate(combined_timeline):
                 if not self.is_running:
                     break
-                
+
                 self.current_action_index = i
-                
+
                 # 一時停止待機
                 while self.is_paused and self.is_running:
                     await asyncio.sleep(0.1)
-                
+
                 if not self.is_running:
                     break
-                
+
                 # 時間待機
                 await self.wait_for_action_time(action["time"])
-                
+
                 # アクション実行
                 await self.execute_action(action)
                 actions_executed += 1
-            
+
             # 実行結果
             end_time = asyncio.get_event_loop().time()
             duration = end_time - self.start_time
-            
+
             return {
                 "duration": duration,
                 "actions_count": actions_executed,
                 "status": "completed" if self.is_running else "stopped"
             }
-            
+
         except Exception as e:
             self.logger.error(f"タイムライン実行エラー: {e}")
             raise

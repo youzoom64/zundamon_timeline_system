@@ -84,7 +84,12 @@
   },
   "niconico": {
     "auto_broadcast": true,
-    "chrome_debug_port": 9222,
-    "broadcast_url": "https://live.nicovideo.jp/create"
+    "chrome_debug_port": 9223,
+    "chrome_exe_path": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "user_data_dir": "C:/Users/youzo/AppData/Local/Google/Chrome/User Data",
+    "profile_directory": "Profile 7",
+    "title_preset": "【ずんだもん配信】",
+    "broadcast_url": "https://live.nicovideo.jp/create",
+    "wait_before_start": 30
   }
 }
