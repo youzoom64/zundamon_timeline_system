@@ -81,7 +81,8 @@ class AudioPlayer:
                     if self.volume_callback:
                         self.volume_callback(normalized_volume)
                         chunk_count += 1
-                        self.logger.debug(f"[音量分析] チャンク#{chunk_count}: volume={normalized_volume:.3f}")
+                        # デバッグログをコメントアウト（大量出力防止）
+                        pass  # self.logger.debug(f"[音量分析] チャンク#{chunk_count}: volume={normalized_volume:.3f}")
 
                 # 音声出力
                 if len(chunk) > 0:

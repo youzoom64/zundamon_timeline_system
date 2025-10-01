@@ -385,6 +385,16 @@ class IntegratedBroadcastSystem:
             if len(timeline_json.get('timeline', [])) > 5:
                 print(f"   ... 他 {len(timeline_json.get('timeline', [])) - 5} 項目")
 
+            # JSONファイルに出力
+            import json
+            from pathlib import Path
+            output_dir = Path("test/generated_timelines")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_file = output_dir / f"timeline_{user_id}_{'-'.join(broadcast_ids)}.json"
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(timeline_json, f, indent=2, ensure_ascii=False)
+            print(f"[処理] タイムライン保存: {output_file}")
+
             # タイムライン実行（broadcast_to_browserをcallbackとして渡す）
             timeline_executor = TimelineExecutor(self.config, self.obs, broadcast_callback=broadcast_to_browser)
             await timeline_executor.execute_timeline_from_json(timeline_json)

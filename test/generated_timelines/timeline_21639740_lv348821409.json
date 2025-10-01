@@ -1,0 +1,658 @@
+{
+  "title": "テストユーザーさんのコメント読み上げ (おはようございますー！)",
+  "listener_name": "視聴者さん",
+  "nickname": "みんな",
+  "other_text": "放送ID: lv348821409",
+  "timeline": [
+    {
+      "time": 0.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "要約:",
+      "blink": true
+    },
+    {
+      "time": 2.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- アニメ豚太郎は新しい艦を手に入れることに喜びを感じている",
+      "blink": true
+    },
+    {
+      "time": 8.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 航空戦艦や改ニの艦を「使える」と評価しており、ゲームの中での戦略を重視している",
+      "blink": true
+    },
+    {
+      "time": 16.2,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 海外艦や特定の艦についても興味を持ち、図鑑を完成させたいという欲望を持っている",
+      "blink": true
+    },
+    {
+      "time": 24.4,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 特定の艦に対して愛着を持ち、「妻」とまで表現している",
+      "blink": true
+    },
+    {
+      "time": 30.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- ゲーム内での達成感を強調し、特定のキャラクターやアイテムを高く評価している",
+      "blink": true
+    },
+    {
+      "time": 37.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 特定の艦やキャラクターについて、声優や製作会社の影響についても言及している",
+      "blink": true
+    },
+    {
+      "time": 45.599999999999994,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "感情分析:",
+      "blink": true
+    },
+    {
+      "time": 47.599999999999994,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 主にポジティブな感情が多く、ゲーム内の達成や収集に対する喜びが表れている",
+      "blink": true
+    },
+    {
+      "time": 55.199999999999996,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 特定のキャラクターに対して愛情を持っているが、それが現実逃避の一環である可能性がある",
+      "blink": true
+    },
+    {
+      "time": 64.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 自慢や達成感を誇示する部分があり、自己肯定感が強い",
+      "blink": true
+    },
+    {
+      "time": 69.4,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "精神分析:",
+      "blink": true
+    },
+    {
+      "time": 71.4,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 攻撃性: コメント全体に攻撃的な要素は見られず、むしろポジティブな評価や達成の喜びが中心である",
+      "blink": true
+    },
+    {
+      "time": 81.2,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 現実逃避: ゲーム内でのキャラクターを「妻」と表現するなど、現実の人間関係をゲームに投影している可能性がある",
+      "blink": true
+    },
+    {
+      "time": 92.4,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "これは現実逃避の一形態と考えられる",
+      "blink": true
+    },
+    {
+      "time": 95.80000000000001,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "- 自己認識や自尊心が高く、ゲームでの成功を自分の価値として強く捉えている",
+      "blink": true
+    },
+    {
+      "time": 103.20000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "HTML形式での出力:",
+      "blink": true
+    },
+    {
+      "time": 105.40000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "アニメ豚太郎は新しい艦を手に入れることに喜びを感じている",
+      "blink": true
+    },
+    {
+      "time": 111.00000000000001,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "航空戦艦や改ニの艦を「使える」と評価しており、ゲームの中での戦略を重視している",
+      "blink": true
+    },
+    {
+      "time": 118.80000000000001,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "海外艦や特定の艦についても興味を持ち、図鑑を完成させたいという欲望を持っている",
+      "blink": true
+    },
+    {
+      "time": 126.60000000000001,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "特定の艦に対して愛着を持ち、「妻」とまで表現している",
+      "blink": true
+    },
+    {
+      "time": 131.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "ゲーム内での達成感を強調し、特定のキャラクターやアイテムを高く評価している",
+      "blink": true
+    },
+    {
+      "time": 139.20000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "特定の艦やキャラクターについて、声優や製作会社の影響についても言及している",
+      "blink": true
+    },
+    {
+      "time": 146.60000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "感情分析:",
+      "blink": true
+    },
+    {
+      "time": 148.60000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "主にポジティブな感情が多く、ゲーム内の達成や収集に対する喜びが表れている",
+      "blink": true
+    },
+    {
+      "time": 155.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "特定のキャラクターに対して愛情を持っているが、それが現実逃避の一環である可能性がある",
+      "blink": true
+    },
+    {
+      "time": 164.20000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "自慢や達成感を誇示する部分があり、自己肯定感が強い",
+      "blink": true
+    },
+    {
+      "time": 169.20000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "精神分析:",
+      "blink": true
+    },
+    {
+      "time": 171.20000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "攻撃性: コメント全体に攻撃的な要素は見られず、むしろポジティブな評価や達成の喜びが中心である",
+      "blink": true
+    },
+    {
+      "time": 180.60000000000002,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "現実逃避: ゲーム内でのキャラクターを「妻」と表現するなど、現実の人間関係をゲームに投影している可能性がある",
+      "blink": true
+    },
+    {
+      "time": 191.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "これは現実逃避の一形態と考えられる",
+      "blink": true
+    },
+    {
+      "time": 194.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "normal",
+      "outfit": "usual",
+      "pose": "think",
+      "text": "自己認識や自尊心が高く、ゲームでの成功を自分の価値として強く捉えている",
+      "blink": true
+    },
+    {
+      "time": 201.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ハッピーハロウィン　新規艦ゲットしましょう",
+      "blink": true
+    },
+    {
+      "time": 206.00000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 航空戦艦なのでまあまあ使う子",
+      "blink": true
+    },
+    {
+      "time": 208.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 改ニ作って損なしです",
+      "blink": true
+    },
+    {
+      "time": 210.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 前にイベで扶桑型のおかげで甲いけたこともあったので　お勧めします",
+      "blink": true
+    },
+    {
+      "time": 217.20000000000005,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ちなみに増設済みという　うちのは",
+      "blink": true
+    },
+    {
+      "time": 220.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 海外艦の図鑑もいつか・・",
+      "blink": true
+    },
+    {
+      "time": 222.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] あ　無難にいい大発駆逐だ",
+      "blink": true
+    },
+    {
+      "time": 225.20000000000005,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] そういえば無課金でしたね",
+      "blink": true
+    },
+    {
+      "time": 227.60000000000005,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] １週間で改ニした子ですわ　この子",
+      "blink": true
+    },
+    {
+      "time": 230.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ７ー２－１という馴染みのマップ",
+      "blink": true
+    },
+    {
+      "time": 233.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ちなみに　霰も同じ週に改ニまであげました　その時",
+      "blink": true
+    },
+    {
+      "time": 238.60000000000005,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 黒潮は　親潮とかとセットな印象",
+      "blink": true
+    },
+    {
+      "time": 241.60000000000005,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 早潮も同じくセット　ちな改ニもち",
+      "blink": true
+    },
+    {
+      "time": 244.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 親潮も改ニもち",
+      "blink": true
+    },
+    {
+      "time": 246.80000000000004,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] １－４で会いに行きましょう",
+      "blink": true
+    },
+    {
+      "time": 249.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] おでの妻",
+      "blink": true
+    },
+    {
+      "time": 251.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 茅野艦全員と結婚した提督は　おでです",
+      "blink": true
+    },
+    {
+      "time": 255.00000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 一応　百隻で甲をとった偉人もいますが　難易度高そうなので",
+      "blink": true
+    },
+    {
+      "time": 260.6,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] この子は今回の任務で使います",
+      "blink": true
+    },
+    {
+      "time": 263.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ちなみにサブあってもいい性能です",
+      "blink": true
+    },
+    {
+      "time": 266.6,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ネームシップの子もおすすめです",
+      "blink": true
+    },
+    {
+      "time": 269.6,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ちなみにジョンは末妹みたいですね",
+      "blink": true
+    },
+    {
+      "time": 272.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] チート駆逐の一角",
+      "blink": true
+    },
+    {
+      "time": 274.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] こいつの改ニだしとけば　まあまあ安定",
+      "blink": true
+    },
+    {
+      "time": 278.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] ぽいぬ　とか時雨と同じ　タニベだね",
+      "blink": true
+    },
+    {
+      "time": 281.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] こいつの観測船modeには世話になってます　５―５下で",
+      "blink": true
+    },
+    {
+      "time": 287.2,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 北方イベでちょくちょくでた子",
+      "blink": true
+    },
+    {
+      "time": 290.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] モガは今回もでますね",
+      "blink": true
+    },
+    {
+      "time": 292.0,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] この子もタニベだったかな？",
+      "blink": true
+    },
+    {
+      "time": 294.6,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 自社社員のせいで　出演多い人",
+      "blink": true
+    },
+    {
+      "time": 297.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 仏艦は大半　タニベな印象",
+      "blink": true
+    },
+    {
+      "time": 299.8,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] 仏戦艦姉妹とか　コマとかもタニベだし",
+      "blink": true
+    },
+    {
+      "time": 303.40000000000003,
+      "character": "zundamon",
+      "position": "center",
+      "expression": "happy",
+      "outfit": "usual",
+      "pose": "basic",
+      "text": "[アニメ豚太郎] タニベ艦はくっそ多い",
+      "blink": true
+    }
+  ]
+}

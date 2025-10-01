@@ -147,32 +147,55 @@ class TimelineGenerator:
         current_time = 0.0
 
         for item in data:
-            # 読み上げ時間推定（文字数ベース：5文字/秒）
+            # テキスト取得・クリーニング
             text = item.get("text", "")
-            estimated_duration = max(len(text) / 5.0, 2.0)  # 最低2秒
+
+            # HTMLタグ除去
+            import re
+            text = re.sub(r'<br\s*/?>', '\n', text)  # <br>を改行に
+            text = re.sub(r'<[^>]+>', '', text)  # その他のHTMLタグを削除
+            text = text.strip()
+
+            if not text:
+                continue  # 空のテキストはスキップ
 
             # 表情・ポーズをタイプに応じて設定
             if item["type"] == "ai_analysis":
                 expression = "normal"
                 pose = "think"
-                prefix = "[AI分析]"
+                prefix = ""  # AI分析はプレフィックスなし
             else:
                 expression = "happy"
                 pose = "basic"
                 prefix = f"[{item['user_name']}]"
 
-            timeline_items.append({
-                "time": current_time,
-                "character": "zundamon",
-                "position": "center",
-                "expression": expression,
-                "outfit": "usual",
-                "pose": pose,
-                "text": f"{prefix} {text}",
-                "blink": True
-            })
+            # 句点で分割（。で区切る）
+            sentences = re.split(r'([。\n]+)', text)
+            sentences = [s.strip() for s in sentences if s.strip() and s.strip() not in ['。', '\n']]
 
-            current_time += estimated_duration
+            # 各文を個別のタイムライン項目として追加
+            for sentence in sentences:
+                if not sentence:
+                    continue
+
+                # 読み上げ時間推定（文字数ベース：5文字/秒）
+                estimated_duration = max(len(sentence) / 5.0, 2.0)  # 最低2秒
+
+                # プレフィックスがある場合のみスペースを追加
+                text_with_prefix = f"{prefix} {sentence}" if prefix else sentence
+
+                timeline_items.append({
+                    "time": current_time,
+                    "character": "zundamon",
+                    "position": "center",
+                    "expression": expression,
+                    "outfit": "usual",
+                    "pose": pose,
+                    "text": text_with_prefix,
+                    "blink": True
+                })
+
+                current_time += estimated_duration
 
         return {
             "title": combined_title,
