@@ -289,7 +289,7 @@ class IntegratedBroadcastSystem:
         self.current_phase = "zundamon_interactive"
 
         if self.obs:
-            self.obs.switch_scene("ずんだもん配信画面")
+            self.obs.switch_scene("ずんだもんシーン")
 
         # DB範囲データからタイムライン生成・実行
         if self.db_range_data:
